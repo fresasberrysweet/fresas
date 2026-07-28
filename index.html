@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berry Seet - Fresas, Crepes & Smoothies Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #f72585;
+            --accent: #7209b7;
+            --light: #fef5f9;
+            --dark: #2d1b3d;
+            --text: #333;
+            --green: #52b788;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(247, 37, 133, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: slideInLeft 0.8s ease;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: white;
+            margin: 5px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: white;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.1) 0%, rgba(247, 37, 133, 0.1) 100%), 
+                        url('https://images.unsplash.com/photo-1599599810694-b5ac4dd7b7a0?w=1200&h=600&fit=crop') center/cover;
+            padding: 120px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.7) 0%, rgba(247, 37, 133, 0.7) 100%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 900;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            background: white;
+            color: var(--secondary);
+            border: none;
+            padding: 16px 45px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(247, 37, 133, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            z-index: -1;
+            transition: left 0.3s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        .cta-button:hover {
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(247, 37, 133, 0.4);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-secondary:hover {
+            background: white;
+            color: var(--secondary);
+        }
+
+        /* PRODUCTOS */
+        .products {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 900;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 15px auto 0;
+            display: block;
+            border-radius: 3px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+            margin-bottom: 50px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 35px;
+            margin-bottom: 50px;
+        }
+
+        /* ================================================
+           SCROLL REVEAL UNIVERSAL - Se aplica a TODO
+           ================================================ */
+        
+        /* Elemento base: invisible y abajo */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(80px);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Cuando está en viewport: visible y en su lugar */
+        .scroll-reveal.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ================================================
+           TARJETAS DE PRODUCTOS
+           ================================================ */
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 
+                        0 10px 20px rgba(0, 0, 0, 0.1),
+                        0 15px 35px rgba(247, 37, 133, 0.1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(80px);
+        }
+
+        .product-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.12),
+                        0 20px 40px rgba(0, 0, 0, 0.15),
+                        0 25px 50px rgba(247, 37, 133, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            position: relative;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 15px;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(1);
+        }
+
+        .product-card.reveal .product-image img {
+            transform: scale(1);
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.08);
+        }
+
+        /* ================================================
+           CARRUSEL - SCROLL REVEAL
+           ================================================ */
+        .menu-item {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(80px);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08),
+                        0 8px 16px rgba(0, 0, 0, 0.1),
+                        0 12px 24px rgba(247, 37, 133, 0.08);
+        }
+
+        .menu-item.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .menu-item:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12),
+                        0 16px 32px rgba(0, 0, 0, 0.12),
+                        0 20px 40px rgba(247, 37, 133, 0.1);
+        }
+
+        .menu-item.hidden {
+            display: none;
+        }
+
+        /* ================================================
+           ITEMS DE ESTADÍSTICAS - SCROLL REVEAL
+           ================================================ */
+        .stat-item {
+            opacity: 0;
+            transform: translateY(80px);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1),
+                        0 8px 16px rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-item.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stat-item:hover {
+            box-shadow: 0 8px 16px rgba(255, 255, 255, 0.15),
+                        0 16px 32px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ================================================
+           ITEMS DE CONTACTO - SCROLL REVEAL
+           ================================================ */
+        .contact-item {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(80px);
+            animation: none;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.08),
+                        0 8px 16px rgba(255, 255, 255, 0.06);
+        }
+
+        .contact-item.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .contact-item:hover {
+            box-shadow: 0 8px 16px rgba(255, 255, 255, 0.12),
+                        0 12px 24px rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .contact-item:hover {
+            transform: translateX(10px);
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .product-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 77, 109, 0.7) 0%, rgba(247, 37, 133, 0.7) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-card:hover .product-overlay {
+            opacity: 1;
+        }
+
+        .overlay-icon {
+            font-size: 50px;
+            color: white;
+            animation: bounce 0.6s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .product-info {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .product-info h3 {
+            color: var(--secondary);
+            font-size: 22px;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .product-info p {
+            color: #777;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* CARRUSEL */
+        .carousel {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, var(--light) 0%, #fff5fb 100%);
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .carousel-wrapper {
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1),
+                        0 15px 35px rgba(0, 0, 0, 0.12),
+                        0 25px 50px rgba(247, 37, 133, 0.12);
+            position: relative;
+            /* Scroll-reveal styles */
+            opacity: 0;
+            transform: translateY(80px);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .carousel-wrapper.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            height: 500px;
+            position: relative;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            animation: slideUp 0.6s ease;
+        }
+
+        .carousel-caption h3 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--secondary);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            font-weight: bold;
+        }
+
+        .carousel-btn:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .carousel-btn.prev {
+            left: 20px;
+        }
+
+        .carousel-btn.next {
+            right: 20px;
+        }
+
+        .carousel-dots {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            margin: 0 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .dot.active {
+            background: var(--secondary);
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        /* STATS */
+        .stats {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+
+
+
+        /* MENU INTERACTIVO */
+        .menu {
+            padding: 100px 20px;
+            background: white;
+        }
+
+        .menu-filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+
+
+        .menu-item-price {
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .menu-item-name {
+            font-size: 18px;
+            color: var(--secondary);
+            margin: 12px 0;
+            font-weight: 700;
+        }
+
+        /* CONTACTO */
+        .contact {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a0f22 100%);
+            color: white;
+        }
+
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+
+
+        .contact-icon {
+            font-size: 28px;
+            color: var(--primary);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 77, 109, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-text h4 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255, 77, 109, 0.3);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-submit {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247, 37, 133, 0.3);
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 2px solid rgba(255, 77, 109, 0.2);
+        }
+
+        .footer-content {
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            nav {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                padding: 20px;
+                gap: 15px;
+            }
+
+            nav.active {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 32px;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+
+            .carousel-item {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="./logo.png" alt="Berry Sweet">
+                    Berry Sweet
+                </div>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <nav id="nav">
+                    <a href="#inicio">Inicio</a>
+                    <a href="#productos">Productos</a>
+                    <a href="#menu">Menú</a>
+                    <a href="#galeria">Galería</a>
+                    <a href="#contacto">Contacto</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>Bienvenido a Berry Seet</h1>
+            <p>Fresas frescas, Crepes deliciosos y Smoothies saludables</p>
+            <div class="hero-buttons">
+                <button class="cta-button">Ver Menú</button>
+                <button class="cta-button cta-secondary">Reservar Mesa</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTOS DESTACADOS -->
+    <section class="products" id="productos">
+        <div class="container">
+            <h2 class="section-title">Nuestros Productos Estrella</h2>
+            <p class="section-subtitle">Disfruta de lo mejor de la naturaleza en cada bocado</p>
+            <div class="products-grid">
+                <div class="product-card scroll-reveal">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1599599810694-b5ac4dd7b7a0?w=400&h=300&fit=crop" alt="Fresas Frescas" id="img-fresas">
+                        <div class="product-overlay">
+                            <i class="fas fa-heart overlay-icon"></i>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Fresas Premium</h3>
+                        <p>Fresas recién cosechadas, seleccionadas con cuidado para ti</p>
+                    </div>
+                </div>
+
+                <div class="product-card scroll-reveal">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=400&h=300&fit=crop" alt="Crepas" id="img-crepas">
+                        <div class="product-overlay">
+                            <i class="fas fa-utensils overlay-icon"></i>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Crepas</h3>
+                        <p>Crepas dulces y salados preparados al momento con amor</p>
+                    </div>
+                </div>
+
+                <div class="product-card scroll-reveal">
+                    <div class="product-image">
+                        <img src="https://images.unsplash.com/photo-1553530666-ba2a8e36cd12?w=400&h=300&fit=crop" alt="Smoothies" id="img-smoothies">
+                        <div class="product-overlay">
+                            <i class="fas fa-glass-alt overlay-icon"></i>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3>Smoothies</h3>
+                        <p>Bebidas saludables llenas de frutas frescas y nutrientes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CARRUSEL -->
+    <section class="carousel" id="galeria">
+        <div class="container">
+            <h2 class="section-title">Galería de Inspiración</h2>
+            <div class="carousel-container">
+                <div class="carousel-wrapper scroll-reveal">
+                    <div class="carousel-inner" id="carouselInner">
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1557511781-2f694c46dcc1?w=900&h=500&fit=crop" alt="Galería 1">
+                            <div class="carousel-caption">
+                                <h3>Postres Deliciosos</h3>
+                                <p>Creados con pasión y dedicación</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=900&h=500&fit=crop" alt="Galería 2">
+                            <div class="carousel-caption">
+                                <h3>Frutas Frescas</h3>
+                                <p>Directo de la naturaleza a tu mesa</p>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=900&h=500&fit=crop" alt="Galería 3">
+                            <div class="carousel-caption">
+                                <h3>Experiencia Premium</h3>
+                                <p>Calidad garantizada en cada detalle</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn prev" id="prevBtn">❮</button>
+                    <button class="carousel-btn next" id="nextBtn">❯</button>
+                </div>
+                <div class="carousel-dots" id="dotsContainer"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item scroll-reveal">
+                    <h3>5000+</h3>
+                    <p>Clientes Satisfechos</p>
+                </div>
+                <div class="stat-item scroll-reveal">
+                    <h3>50+</h3>
+                    <p>Recetas Diferentes</p>
+                </div>
+                <div class="stat-item scroll-reveal">
+                    <h3>100%</h3>
+                    <p>Ingredientes Frescos</p>
+                </div>
+                <div class="stat-item scroll-reveal">
+                    <h3>7</h3>
+                    <p>Años de Experiencia</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MENÚ INTERACTIVO -->
+    <section class="menu" id="menu">
+        <div class="container">
+            <h2 class="section-title">Nuestro Menú</h2>
+            <div class="menu-filters">
+                <button class="filter-btn active" data-filter="todos">Todos</button>
+                <button class="filter-btn" data-filter="crepes">Crepas</button>
+                <button class="filter-btn" data-filter="waffles">Waffles</button>
+                <button class="filter-btn" data-filter="pancakes">Pancakes</button>
+                <button class="filter-btn" data-filter="fresas">Fresas</button>
+                <button class="filter-btn" data-filter="frappes">Frappes</button>
+                <button class="filter-btn" data-filter="smoothies">Smoothies</button>
+                <button class="filter-btn" data-filter="bebidas">Bebidas</button>
+                <button class="filter-btn" data-filter="combos">Combos</button>
+            </div>
+            <div class="menu-grid" id="menuGrid">
+                <!-- Items generados por JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="contact" id="contacto">
+        <div class="container">
+            <h2 class="section-title">Ponte en Contacto</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item scroll-reveal">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h4>Ubicación</h4>
+                            <p>Calle Principal 123, Tu Ciudad<br>Próximo al parque central</p>
+                        </div>
+                    </div>
+                    <div class="contact-item scroll-reveal">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h4>Teléfono</h4>
+                            <p>+34 912 345 678<br>Disponible 10am - 10pm</p>
+                        </div>
+                    </div>
+                    <div class="contact-item scroll-reveal">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h4>Email</h4>
+                            <p>contacto@berryseet.com<br>info@berryseet.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item scroll-reveal">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h4>Horario</h4>
+                            <p>Lunes a Viernes: 10am - 10pm<br>Fines de semana: 9am - 11pm</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" placeholder="Tu Nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Tu Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Asunto">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Tu Mensaje..." required></textarea>
+                    </div>
+                    <button type="submit" class="form-submit">Enviar Mensaje</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Berry Seet. Todos los derechos reservados.</p>
+                <p>Hecho con 💜 para los amantes de las fresas</p>
+                <div class="social-links">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // HAMBURGER MENU
+        const hamburger = document.getElementById('hamburger');
+        const nav = document.getElementById('nav');
+
+        hamburger.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+
+        nav.addEventListener('click', () => {
+            nav.classList.remove('active');
+        });
+
+        // CAROUSEL
+        let currentSlide = 0;
+        const carousel = document.getElementById('carouselInner');
+        const slides = carousel.querySelectorAll('.carousel-item');
+        const dotsContainer = document.getElementById('dotsContainer');
+
+        slides.forEach((_, index) => {
+            const dot = document.createElement('span');
+            dot.className = `dot ${index === 0 ? 'active' : ''}`;
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(dot);
+        });
+
+        function updateCarousel() {
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            updateCarousel();
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            updateCarousel();
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+        setInterval(nextSlide, 5000);
+
+        // ============================================
+        // MAPEO DE IMÁGENES DE PRODUCTOS
+        // ============================================
+        // IMPORTANTE: Cambia esta URL base según donde alojes tus imágenes
+        // Opciones:
+        // 1. CDN (Imgbb, Imgur): https://i.ibb.co/XXXX/
+        // 2. Tu servidor: https://tudominio.com/imagenes/
+        // 3. Carpeta local: ./imagenes/
+        
+        const IMAGE_BASE_URL = './imagenes/'; // ← CAMBIA ESTA URL A TU SERVIDOR
+        
+        // Mapeo de productos a nombres de archivos
+        const productImageMap = {
+            'Choco Crepa': 'chococrepa.png',
+            'Crepa de Pepperoni': 'crepadepepperoni.png',
+            'Crepa de Queso Philadelphia': 'crepadequesophiladelphia.png',
+            'Crepa Hawaiana': 'crepahawaiana.png',
+            'Crepa de NUTELLA': 'crepadenutella.png',
+            'Crepa Frutos Rojos': 'crepadefrutosrojos.png',
+            'Crepa de NUTELLA y Plátano': 'crepadenutellayplatano.png',
+            'Crepa de Durazno': 'crepadedurazno.png',
+            'Crepa de Fresas con Crema': 'crepadefresasconcrema.png',
+            'Crepa de FERRERO': 'crepadeferrero.png',
+            'Crepa de Mazapan': 'crepademazapan.png',
+            
+            'WAFFLE FRUTOS ROJOS': 'waffledefrutosrojos.png',
+            'Waffle Hawaii': 'wafflehawaii.png',
+            'Choco Waffle': 'chocowaffle.png',
+            'Waffle de Ferrero': 'wafledeferrero.png',
+            'Waffle de Fresa y Nutella': 'waffledefresaynutella.png',
+            'Waffle de Platano, Nutella y Fresa': 'waffledeplatanonutellayfresa.png',
+            'Waffle de NUTELLA y Platano': 'waffledenutellayplatano.png',
+            
+            'Mini-pancakes': 'minipancakes.png',
+            'Minipancakes Banderilla': 'minipancakesbanderilla.png',
+            'Mini Pancakes de FERRERO': 'minipancakesdeferrero.png',
+            'Mini Pancakes de NUTELLA': 'minipancakesdenutella.png',
+            'Mini Pancakes Hawaii': 'minipancakeshawai.png',
+            
+            'Fresas con Crema y OREO': 'fresasconcremayoreo.png',
+            'Fresas con Crema y Miel': 'fresasconcremaymiel.png',
+            'Fresas con Crema y Mazapan': 'fresasconcremaymazapan.png',
+            'Fresas con Crema Clasicas': 'fresasconcremaclasicas.png',
+            'Fresas con Crema de Moka': 'fresasconcremademoka.png',
+            'Fresas con Crema y FERRERO': 'fresasconcremayferrero.png',
+            'FRESAS POP': 'fresaspop.png',
+            
+            'Frappe de OREO': 'frappedeoreo.png',
+            'Frappe de Fresa': 'frappedefresa.png',
+            'Frappe Kinder Delice': 'frappedekinderdelice.png',
+            'Frappe de Mazapan': 'frappedemazapan.png',
+            'Frappe Piña Colada': 'frappedepiñacolada.png',
+            'Frappe de Mango': 'frappedemango.png',
+            
+            'Smoothie de Fresa': 'smoothiedefresa.png',
+            'Smoothie de Tamarindo': 'smoothiedetamarindo.png',
+            'Smoothie Frutos Rojos': 'smoothiedefrutosrojos.png',
+            'Smoothie ICEE Cereza': 'smoothieiceecereza.png',
+            'Smoothie ICEE de Mora': 'smoothieiceedemora.png',
+            
+            'Chocolate Artesanal': 'chocolateartesanal.png',
+            'Chocolate Caliente con Bombones': 'chocolatecalientito.png',
+            'Cafe Americano': 'cafeamericano.png',
+            'Licuado de Platano': 'licuadodeplatano.png',
+            
+            'FRAPPE FRESA Y OREO': 'combo-frappefresayoreo.png',
+            'Crepa de NUTELLA con Chocolate Calientito': 'combo-crepadenutellaconchocolatecalientito.png'
+        };
+        
+        // Función para obtener la URL de la imagen
+        function getProductImage(productName) {
+            const imageFile = productImageMap[productName];
+            if (imageFile) {
+                return IMAGE_BASE_URL + imageFile;
+            }
+            // Si no encuentra imagen, usa un placeholder
+            return 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(productName);
+        }
+        
+        const menuItems = [
+            // CREPAS
+            { name: 'Choco Crepa', price: 'MX$145.00', category: 'crepes', desc: 'Nutella, lechera, plátano, fresa y Kinder Delice' },
+            { name: 'Crepa de Pepperoni', price: 'MX$135.00', category: 'crepes', desc: 'Salsa de tomate, queso mozzarella, pepperoni y chipotle' },
+            { name: 'Crepa de Queso Philadelphia', price: 'MX$130.00', category: 'crepes', desc: 'Queso philadelphia, mermelada de zarzamora, fresa y plátano' },
+            { name: 'Crepa Hawaiana', price: 'MX$135.00', category: 'crepes', desc: 'Queso, salsa de tomate, jamón y piña' },
+            { name: 'Crepa de NUTELLA', price: 'MX$120.00', category: 'crepes', desc: 'Fresa, plátano, nutella y lechera' },
+            { name: 'Crepa Frutos Rojos', price: 'MX$135.00', category: 'crepes', desc: 'Queso philadelphia, zarzamora, blueberry, frambuesa, fresa' },
+            { name: 'Crepa de NUTELLA y Plátano', price: 'MX$115.00', category: 'crepes', desc: 'Nutella y plátano' },
+            { name: 'Crepa de Durazno', price: 'MX$115.00', category: 'crepes', desc: 'Mermelada de durazno, duraznos picados y lechera' },
+            { name: 'Crepa de Fresas con Crema', price: 'MX$135.00', category: 'crepes', desc: 'Fresas, crema clásica, lechera y ajonjolí garapiñado' },
+            { name: 'Crepa de FERRERO', price: 'MX$120.00', category: 'crepes', desc: 'Nutella, fresa, lechera y chocolate ferrero' },
+            { name: 'Crepa de Mazapan', price: 'MX$122.00', category: 'crepes', desc: 'Mazapán, cajeta y plátano' },
+            
+            // WAFFLES
+            { name: 'WAFFLE FRUTOS ROJOS', price: 'MX$135.00', category: 'waffles', desc: 'Zarzamora, fresa, frambuesa, blueberry, lechera, azúcar glass' },
+            { name: 'Waffle Hawaii', price: 'MX$135.00', category: 'waffles', desc: 'Plátano, fresa, uva, durazno, lechera y miel mapple' },
+            { name: 'Choco Waffle', price: 'MX$149.00', category: 'waffles', desc: 'Chocolate Kinder Delice, nutella, plátano, fresa y lechera' },
+            { name: 'Waffle de Ferrero', price: 'MX$135.00', category: 'waffles', desc: 'Chocolate ferrero, nutella y fresa' },
+            { name: 'Waffle de Fresa y Nutella', price: 'MX$130.00', category: 'waffles', desc: 'Nutella y fresa' },
+            { name: 'Waffle de Platano, Nutella y Fresa', price: 'MX$135.00', category: 'waffles', desc: 'Nutella, fresas y plátano' },
+            { name: 'Waffle de NUTELLA y Platano', price: 'MX$130.00', category: 'waffles', desc: 'Nutella y plátano' },
+            
+            // PANCAKES MINI
+            { name: 'Mini-pancakes', price: 'MX$75.00', category: 'pancakes', desc: '10 pancakes con durazno, fresa, uva, lechera, nutella y mermelada' },
+            { name: 'Minipancakes Banderilla', price: 'MX$65.00', category: 'pancakes', desc: '6 minipancakes con plátano y fresa' },
+            { name: 'Mini Pancakes de FERRERO', price: 'MX$96.00', category: 'pancakes', desc: 'Nutella, chocolate Ferrero y fresa, 10 piezas' },
+            { name: 'Mini Pancakes de NUTELLA', price: 'MX$88.00', category: 'pancakes', desc: 'Nutella, fresa y plátano, 10 piezas' },
+            { name: 'Mini Pancakes Hawaii', price: 'MX$90.00', category: 'pancakes', desc: 'Miel MAPPLE, uva, fresa, durazno y plátano, 10 piezas' },
+            
+            // FRESAS CON CREMA
+            { name: 'Fresas con Crema y OREO', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema clásica sabor oreo, galleta oreo, crema batida' },
+            { name: 'Fresas con Crema y Miel', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema tradicional, miel de abeja, ajonjolí, granola' },
+            { name: 'Fresas con Crema y Mazapan', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, lechera, topping de mazapán, granillo' },
+            { name: 'Fresas con Crema Clasicas', price: 'MX$125.00', category: 'fresas', desc: 'Crema, chocolate, lechera y crema batida' },
+            { name: 'Fresas con Crema de Moka', price: 'MX$125.00', category: 'fresas', desc: 'Crema sabor Moka, chocolates, lechera y crema batida' },
+            { name: 'Fresas con Crema y FERRERO', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, chocolate ferrero Rocher, nutella, nuez picada' },
+            { name: 'FRESAS POP', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, palomitas de caramelo y lechera' },
+            
+            // FRAPPES
+            { name: 'Frappe de OREO', price: 'MX$115.00', category: 'frappes', desc: 'Leche deslactosada, galleta oreo, chocolate y crema batida' },
+            { name: 'Frappe de Fresa', price: 'MX$120.00', category: 'frappes', desc: 'Leche deslactosada, fresa natural y crema batida' },
+            { name: 'Frappe Kinder Delice', price: 'MX$125.00', category: 'frappes', desc: 'Leche deslactosada, chocolate, crema batida y Kinder Delice' },
+            { name: 'Frappe de Mazapan', price: 'MX$115.00', category: 'frappes', desc: 'Leche deslactosada, mazapán, chocolate y crema batida' },
+            { name: 'Frappe Piña Colada', price: 'MX$120.00', category: 'frappes', desc: 'Refrescante combinación tropical' },
+            { name: 'Frappe de Mango', price: 'MX$120.00', category: 'frappes', desc: 'Pulpa de mango natural, mermelada de mango, leche deslactosada' },
+            
+            // SMOOTHIES
+            { name: 'Smoothie de Fresa', price: 'MX$115.00', category: 'smoothies', desc: 'Fresco y natural' },
+            { name: 'Smoothie de Tamarindo', price: 'MX$110.00', category: 'smoothies', desc: 'Tropical y delicioso' },
+            { name: 'Smoothie Frutos Rojos', price: 'MX$115.00', category: 'smoothies', desc: 'Mix de frutos rojos' },
+            { name: 'Smoothie ICEE Cereza', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor cereza refrescante' },
+            { name: 'Smoothie ICEE de Mora', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor mora delicioso' },
+            
+            // BEBIDAS CALIENTES
+            { name: 'Chocolate Artesanal', price: 'MX$75.00', category: 'bebidas', desc: 'Chocolate calientito artesanal' },
+            { name: 'Chocolate Caliente con Bombones', price: 'MX$70.00', category: 'bebidas', desc: 'Chocolate caliente premium' },
+            { name: 'Cafe Americano', price: 'MX$66.00', category: 'bebidas', desc: 'Delicioso Café Americano Punta del Cielo' },
+            { name: 'Licuado de Platano', price: 'MX$69.00', category: 'bebidas', desc: 'Leche, plátano y canela' },
+            
+            // COMBOS
+            { name: 'FRAPPE FRESA Y OREO', price: 'MX$235.00', category: 'combos', desc: 'Frappe de OREO + Frappe de Fresa' },
+            { name: 'Crepa de NUTELLA con Chocolate Calientito', price: 'MX$180.00', category: 'combos', desc: 'Crepa de Nutella + Chocolate Artesanal' }
+        ];
+
+        const menuGrid = document.getElementById('menuGrid');
+
+        // ============================================
+        // SCROLL REVEAL EFFECT - UNIVERSAL & INTERACTIVE
+        // ============================================
+        // Este efecto es TOTALMENTE INTERACTIVO:
+        // 1. TODOS los elementos con .scroll-reveal son observados
+        // 2. Al ENTRAR en viewport: agrega clase .reveal (aparece con animación)
+        // 3. Al SALIR de viewport: quita clase .reveal (desaparece)
+        // 4. Al volver a ENTRAR: se repite la animación (¡SIN recargar!)
+        // 5. Funciona continuamente mientras scrolleas
+        
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        // Variable global para que renderMenu pueda usarla - DEFINIDA PRIMERO
+        const scrollObserver = new IntersectionObserver(function(entries) {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    // ENTRA en viewport: agrega la clase para animar
+                    entry.target.classList.add('reveal');
+                } else {
+                    // SALE del viewport: quita la clase para poder repetir
+                    entry.target.classList.remove('reveal');
+                }
+            });
+        }, observerOptions);
+
+        // ============================================
+        // FUNCIÓN RENDERMENU - AHORA PUEDE USAR scrollObserver
+        // ============================================
+
+        function renderMenu(filter = 'todos') {
+            menuGrid.innerHTML = '';
+            menuItems.forEach((item, index) => {
+                if (filter === 'todos' || item.category === filter) {
+                    const div = document.createElement('div');
+                    div.className = 'menu-item scroll-reveal';
+                    const imageUrl = getProductImage(item.name);
+                    div.innerHTML = `
+                        <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 10px; margin-bottom: 15px; background: #f9f9f9; display: flex; align-items: center; justify-content: center;">
+                            <img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                        </div>
+                        <div class="menu-item-name">${item.name}</div>
+                        <div class="menu-item-price">${item.price}</div>
+                        ${item.desc ? `<p style="color: #999; font-size: 13px; margin-top: 8px; line-height: 1.5;">${item.desc}</p>` : ''}
+                    `;
+                    menuGrid.appendChild(div);
+                    
+                    // El observer global va a observar este nuevo item
+                }
+            });
+            
+            // Re-observar todos los items del menú que se acaban de crear
+            document.querySelectorAll('.menu-item').forEach(item => {
+                scrollObserver.observe(item);
+            });
+        }
+
+        renderMenu();
+
+        // Actualizar imágenes de productos estrella
+        document.getElementById('img-fresas').src = './imagenes/fresaspop.png';
+        document.getElementById('img-crepas').src = getProductImage('Choco Crepa');
+        document.getElementById('img-smoothies').src = getProductImage('Smoothie de Fresa');
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                renderMenu(this.dataset.filter);
+            });
+        });
+
+        // Observa TODOS los elementos con clase .scroll-reveal
+        // Esto incluye: product-cards, carousel, menu-items, stat-items, contact-items, etc.
+        document.querySelectorAll('.scroll-reveal').forEach(element => {
+            scrollObserver.observe(element);
+        });
+
+        // SMOOTH SCROLL
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
