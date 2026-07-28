@@ -965,24 +965,24 @@
                 <div class="carousel-wrapper scroll-reveal">
                     <div class="carousel-inner" id="carouselInner">
                         <div class="carousel-item">
-                            <img src="https://images.unsplash.com/photo-1557511781-2f694c46dcc1?w=900&h=500&fit=crop" alt="Galería 1">
+                            <img src="./chococrepa.png" alt="Choco Crepa">
                             <div class="carousel-caption">
-                                <h3>Postres Deliciosos</h3>
-                                <p>Creados con pasión y dedicación</p>
+                                <h3>Choco Crepa Deliciosa</h3>
+                                <p>Nutella, lechera, plátano, fresa y Kinder Delice</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=900&h=500&fit=crop" alt="Galería 2">
+                            <img src="./wafflehawaii.png" alt="Waffle Hawaii">
                             <div class="carousel-caption">
-                                <h3>Frutas Frescas</h3>
-                                <p>Directo de la naturaleza a tu mesa</p>
+                                <h3>Waffle Hawaii Premium</h3>
+                                <p>Plátano, fresa, uva, durazno y miel mapple</p>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <img src="https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=900&h=500&fit=crop" alt="Galería 3">
+                            <img src="./fresaspop.png" alt="Fresas Pop">
                             <div class="carousel-caption">
-                                <h3>Experiencia Premium</h3>
-                                <p>Calidad garantizada en cada detalle</p>
+                                <h3>Fresas Pop Crujientes</h3>
+                                <p>Crema clásica, palomitas de caramelo y lechera</p>
                             </div>
                         </div>
                     </div>
@@ -1011,7 +1011,7 @@
                     <p>Ingredientes Frescos</p>
                 </div>
                 <div class="stat-item scroll-reveal">
-                    <h3>7</h3>
+                    <h3>2</h3>
                     <p>Años de Experiencia</p>
                 </div>
             </div>
@@ -1180,7 +1180,7 @@
         // 2. Tu servidor: https://tudominio.com/imagenes/
         // 3. Carpeta local: ./imagenes/
         
-        const IMAGE_BASE_URL = './imagenes/'; // ← CAMBIA ESTA URL A TU SERVIDOR
+        const IMAGE_BASE_URL = './'; // ← URL base: carpeta raíz
         
         // Mapeo de productos a nombres de archivos
         const productImageMap = {
@@ -1379,9 +1379,9 @@
         renderMenu();
 
         // Actualizar imágenes de productos estrella
-        document.getElementById('img-fresas').src = './imagenes/fresaspop.png';
-        document.getElementById('img-crepas').src = getProductImage('Choco Crepa');
-        document.getElementById('img-smoothies').src = getProductImage('Smoothie de Fresa');
+        document.getElementById('img-fresas').src = './fresaspop.png';
+        document.getElementById('img-crepas').src = './chococrepa.png';
+        document.getElementById('img-smoothies').src = './smoothiedefresa.png';
 
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
