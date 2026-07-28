@@ -1318,31 +1318,29 @@
         const menuGrid = document.getElementById('menuGrid');
 
         // ============================================
-        // SCROLL REVEAL EFFECT - UNIVERSAL, UNA SOLA VEZ
+        // SCROLL REVEAL EFFECT - UNIVERSAL & INTERACTIVE
         // ============================================
-        // El bug del "parpadeo" (tarjetas que aparecen y desaparecen en
-        // ciclo) pasaba porque el observer quitaba la clase .reveal cada
-        // vez que un elemento salía del viewport, así que al estar varias
-        // tarjetas muy pegadas entre sí, el simple hecho de mover la vista
-        // hacia otra tarjeta hacía que la anterior "saliera" un poco del
-        // viewport, perdiera la clase, y la volviera a ganar al instante:
-        // eso generaba el ciclo de aparece/desaparece.
-        // Ahora cada elemento se revela UNA sola vez y se deja de observar
-        // (unobserve), así el ciclo ya no puede repetirse.
-
+        // Este efecto es TOTALMENTE INTERACTIVO:
+        // 1. TODOS los elementos con .scroll-reveal son observados
+        // 2. Al ENTRAR en viewport: agrega clase .reveal (aparece con animación)
+        // 3. Al SALIR de viewport: quita clase .reveal (desaparece)
+        // 4. Al volver a ENTRAR: se repite la animación (¡SIN recargar!)
+        // 5. Funciona continuamente mientras scrolleas
+        
         const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.15,
+            rootMargin: '0px 0px -100px 0px'
         };
 
         // Variable global para que renderMenu pueda usarla - DEFINIDA PRIMERO
         const scrollObserver = new IntersectionObserver(function(entries) {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    // ENTRA en viewport: agrega la clase para animar...
+                    // ENTRA en viewport: agrega la clase para animar
                     entry.target.classList.add('reveal');
-                    // ...y dejamos de observarlo para que no se repita el ciclo
-                    scrollObserver.unobserve(entry.target);
+                } else {
+                    // SALE del viewport: quita la clase para poder repetir
+                    entry.target.classList.remove('reveal');
                 }
             });
         }, observerOptions);
