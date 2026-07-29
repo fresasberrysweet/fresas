@@ -399,6 +399,17 @@
                         0 20px 40px rgba(247, 37, 133, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .menu-item {
+                padding: 12px;
+                border-radius: 12px;
+            }
+
+            .menu-item img {
+                max-height: 120px;
+            }
+        }
+
         .menu-item.hidden {
             display: none;
         }
@@ -718,7 +729,7 @@
 
         @media (max-width: 480px) {
             .menu-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
             }
         }
@@ -736,6 +747,22 @@
             color: var(--secondary);
             margin: 12px 0;
             font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .menu-item-price {
+                font-size: 16px;
+            }
+
+            .menu-item-name {
+                font-size: 12px;
+                margin: 8px 0;
+            }
+
+            .menu-item p {
+                font-size: 10px !important;
+                margin-top: 4px !important;
+            }
         }
 
         /* CONTACTO */
@@ -945,7 +972,7 @@
     <!-- HERO -->
     <section class="hero" id="inicio">
         <div class="hero-content">
-            <h1>Bienvenido a Berry Seet</h1>
+            <h1>Bienvenido a Berry Sweet</h1>
             <p>Fresas frescas, Crepas deliciosas y Smoothies increibles</p>
             <div class="hero-buttons">
                 <button class="cta-button">Ver Menú</button>
