@@ -402,8 +402,8 @@
         .menu-item-content {
             display: flex;
             align-items: center;
-            gap: 25px;
-            padding: 24px;
+            gap: 30px;
+            padding: 32px;
         }
 
         .menu-item-text {
@@ -412,8 +412,8 @@
         }
 
         .menu-item-image {
-            width: 160px;
-            height: 160px;
+            width: 180px;
+            height: 180px;
             flex-shrink: 0;
             background: var(--light);
             border-radius: 12px;
@@ -432,8 +432,8 @@
 
         @media (max-width: 768px) {
             .menu-item-content {
-                gap: 20px;
-                padding: 15px;
+                gap: 24px;
+                padding: 26px;
             }
 
             .menu-item-image {
@@ -741,8 +741,14 @@
 
         /* MENU INTERACTIVO */
         .menu {
-            padding: 100px 20px;
+            padding: 100px 10px;
             background: white;
+        }
+
+        @media (max-width: 768px) {
+            .menu {
+                padding: 60px 12px;
+            }
         }
 
         .menu-filters {
@@ -788,20 +794,20 @@
         .menu-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 25px;
+            gap: 35px;
         }
 
         @media (max-width: 768px) {
             .menu-grid {
                 grid-template-columns: 1fr;
-                gap: 25px;
+                gap: 28px;
             }
         }
 
         @media (max-width: 480px) {
             .menu-grid {
                 grid-template-columns: 1fr;
-                gap: 18px;
+                gap: 25px;
             }
         }
 
