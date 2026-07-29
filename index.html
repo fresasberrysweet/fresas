@@ -401,12 +401,12 @@
 
         @media (max-width: 768px) {
             .menu-item {
-                padding: 12px;
+                padding: 16px;
                 border-radius: 12px;
             }
 
             .menu-item img {
-                max-height: 120px;
+                max-height: 140px;
             }
         }
 
@@ -723,14 +723,14 @@
         @media (max-width: 768px) {
             .menu-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                gap: 20px;
             }
         }
 
         @media (max-width: 480px) {
             .menu-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                gap: 20px;
             }
         }
 
@@ -751,17 +751,17 @@
 
         @media (max-width: 768px) {
             .menu-item-price {
-                font-size: 16px;
+                font-size: 18px;
             }
 
             .menu-item-name {
-                font-size: 12px;
-                margin: 8px 0;
+                font-size: 14px;
+                margin: 10px 0;
             }
 
             .menu-item p {
-                font-size: 10px !important;
-                margin-top: 4px !important;
+                font-size: 11px !important;
+                margin-top: 6px !important;
             }
         }
 
@@ -1423,7 +1423,7 @@
                     div.className = 'menu-item scroll-reveal';
                     const imageUrl = getProductImage(item.name);
                     div.innerHTML = `
-                        <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 10px; margin-bottom: 15px; background: #f9f9f9; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 10px; margin-bottom: 20px; background: #f9f9f9; display: flex; align-items: center; justify-content: center;">
                             <img src="${imageUrl}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
                         </div>
                         <div class="menu-item-name">${item.name}</div>
