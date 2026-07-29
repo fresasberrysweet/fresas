@@ -764,16 +764,16 @@
             /* Sticky justo debajo del header, diseño limpio y translúcido */
             position: sticky;
             top: var(--header-height);
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 999;
             padding: 14px 10px;
             transition: background 0.3s ease;
         }
 
         .menu-filters.is-stuck {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.65);
         }
 
         .filter-btn {
@@ -797,29 +797,34 @@
 
         @media (max-width: 768px) {
             .menu-filters {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
                 gap: 8px;
                 margin-bottom: 30px;
                 padding: 10px 8px;
             }
 
             .filter-btn {
-                padding: 8px 16px;
-                font-size: 11px;
+                padding: 8px 4px;
+                font-size: 9.5px;
                 border-radius: 30px;
                 border: 1.5px solid var(--secondary);
                 line-height: 1.2;
                 white-space: nowrap;
+                width: 100%;
+                text-align: center;
             }
         }
 
         @media (max-width: 480px) {
             .menu-filters {
                 gap: 6px;
+                padding: 8px 6px;
             }
 
             .filter-btn {
-                padding: 7px 13px;
-                font-size: 10px;
+                padding: 7px 2px;
+                font-size: 8.5px;
             }
         }
 
@@ -1200,14 +1205,15 @@
     <!-- MENÚ INTERACTIVO -->
     <section class="menu" id="menu">
         <div class="container">
-            <h2 class="section-title">Nuestro Menú</h2>
+            <h2 class="section-title scroll-reveal">Nuestro Menú</h2>
+            <div id="menuStickySentinel"></div>
             <div class="menu-filters" id="menuFilters">
                 <button class="filter-btn active" data-filter="todos">Todos</button>
                 <button class="filter-btn" data-filter="crepes">Crepas</button>
                 <button class="filter-btn" data-filter="waffles">Waffles</button>
                 <button class="filter-btn" data-filter="pancakes">Pancakes</button>
-                <button class="filter-btn" data-filter="fresas">Fresas</button>
                 <button class="filter-btn" data-filter="frappes">Frappes</button>
+                <button class="filter-btn" data-filter="fresas">Fresas</button>
                 <button class="filter-btn" data-filter="smoothies">Smoothies</button>
                 <button class="filter-btn" data-filter="bebidas">Bebidas</button>
                 <button class="filter-btn" data-filter="combos">Combos</button>
@@ -1575,22 +1581,29 @@
         });
 
         // ============================================
-        // SOMBRA CUANDO EL MENÚ QUEDA "PEGADO"
+        // ESTADO "PEGADO" DEL MENÚ — via IntersectionObserver
+        // (evita el listener de scroll que causaba lag)
         // ============================================
         const menuFilters = document.getElementById('menuFilters');
-        const menuSection = document.getElementById('menu');
+        const stickySentinel = document.getElementById('menuStickySentinel');
+        let stickyObserver = null;
 
-        window.addEventListener('scroll', () => {
+        function setupStickyObserver() {
+            if (stickyObserver) stickyObserver.disconnect();
+
             const headerHeight = document.querySelector('header').offsetHeight;
-            const sectionTop = menuSection.getBoundingClientRect().top;
-            const sectionBottom = menuSection.getBoundingClientRect().bottom;
 
-            if (sectionTop <= headerHeight && sectionBottom > headerHeight + menuFilters.offsetHeight) {
-                menuFilters.classList.add('is-stuck');
-            } else {
-                menuFilters.classList.remove('is-stuck');
-            }
-        });
+            stickyObserver = new IntersectionObserver(
+                ([entry]) => {
+                    menuFilters.classList.toggle('is-stuck', !entry.isIntersecting);
+                },
+                { rootMargin: `-${headerHeight + 1}px 0px 0px 0px`, threshold: 0 }
+            );
+            stickyObserver.observe(stickySentinel);
+        }
+
+        setupStickyObserver();
+        window.addEventListener('resize', setupStickyObserver);
 
         // SMOOTH SCROLL
         document.querySelectorAll('nav a').forEach(link => {
