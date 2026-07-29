@@ -797,21 +797,22 @@
 
         @media (max-width: 768px) {
             .menu-filters {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
                 gap: 8px;
                 margin-bottom: 30px;
                 padding: 10px 8px;
             }
 
             .filter-btn {
+                flex: 0 0 calc((100% - 4 * 8px) / 5);
                 padding: 8px 4px;
                 font-size: 9.5px;
                 border-radius: 30px;
                 border: 1.5px solid var(--secondary);
                 line-height: 1.2;
                 white-space: nowrap;
-                width: 100%;
                 text-align: center;
             }
         }
@@ -823,6 +824,7 @@
             }
 
             .filter-btn {
+                flex-basis: calc((100% - 4 * 6px) / 5);
                 padding: 7px 2px;
                 font-size: 8.5px;
             }
