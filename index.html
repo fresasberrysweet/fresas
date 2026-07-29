@@ -20,6 +20,7 @@
             --dark: #2d1b3d;
             --text: #333;
             --green: #52b788;
+            --header-height: 76px;
         }
 
         body {
@@ -759,6 +760,19 @@
             gap: 15px;
             flex-wrap: wrap;
             margin-bottom: 50px;
+
+            /* NUEVO: sticky justo debajo del header */
+            position: sticky;
+            top: var(--header-height);
+            background: white;
+            z-index: 999;
+            padding: 15px 10px;
+            border-radius: 0 0 16px 16px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .menu-filters.is-stuck {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
         .filter-btn {
@@ -1171,7 +1185,7 @@
     <section class="menu" id="menu">
         <div class="container">
             <h2 class="section-title">Nuestro Menú</h2>
-            <div class="menu-filters">
+            <div class="menu-filters" id="menuFilters">
                 <button class="filter-btn active" data-filter="todos">Todos</button>
                 <button class="filter-btn" data-filter="crepes">Crepas</button>
                 <button class="filter-btn" data-filter="waffles">Waffles</button>
@@ -1268,16 +1282,30 @@
     </footer>
 
     <script>
+        // ============================================
+        // AJUSTAR ALTURA REAL DEL HEADER (para el sticky del menú)
+        // ============================================
+        function setHeaderHeightVar() {
+            const header = document.querySelector('header');
+            const height = header.offsetHeight;
+            document.documentElement.style.setProperty('--header-height', `${height}px`);
+        }
+        setHeaderHeightVar();
+        window.addEventListener('resize', setHeaderHeightVar);
+        window.addEventListener('load', setHeaderHeightVar);
+
         // HAMBURGER MENU
         const hamburger = document.getElementById('hamburger');
         const nav = document.getElementById('nav');
 
         hamburger.addEventListener('click', () => {
             nav.classList.toggle('active');
+            setHeaderHeightVar();
         });
 
         nav.addEventListener('click', () => {
             nav.classList.remove('active');
+            setHeaderHeightVar();
         });
 
         // CAROUSEL
@@ -1323,15 +1351,8 @@
         // ============================================
         // MAPEO DE IMÁGENES DE PRODUCTOS
         // ============================================
-        // IMPORTANTE: Cambia esta URL base según donde alojes tus imágenes
-        // Opciones:
-        // 1. CDN (Imgbb, Imgur): https://i.ibb.co/XXXX/
-        // 2. Tu servidor: https://tudominio.com/imagenes/
-        // 3. Carpeta local: ./imagenes/
+        const IMAGE_BASE_URL = './';
         
-        const IMAGE_BASE_URL = './'; // ← URL base: carpeta raíz
-        
-        // Mapeo de productos a nombres de archivos
         const productImageMap = {
             'Choco Crepa': 'chococrepa.png',
             'Crepa de Pepperoni': 'crepadepepperoni.png',
@@ -1389,18 +1410,15 @@
             'Crepa de NUTELLA con Chocolate Calientito': 'combo-crepadenutellaconchocolatecalientito.png'
         };
         
-        // Función para obtener la URL de la imagen
         function getProductImage(productName) {
             const imageFile = productImageMap[productName];
             if (imageFile) {
                 return IMAGE_BASE_URL + imageFile;
             }
-            // Si no encuentra imagen, usa un placeholder
             return 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(productName);
         }
         
         const menuItems = [
-            // CREPAS
             { name: 'Choco Crepa', price: 'MX$145.00', category: 'crepes', desc: 'Nutella, lechera, plátano, fresa y Kinder Delice' },
             { name: 'Crepa de Pepperoni', price: 'MX$135.00', category: 'crepes', desc: 'Salsa de tomate, queso mozzarella, pepperoni y chipotle' },
             { name: 'Crepa de Queso Philadelphia', price: 'MX$130.00', category: 'crepes', desc: 'Queso philadelphia, mermelada de zarzamora, fresa y plátano' },
@@ -1413,7 +1431,6 @@
             { name: 'Crepa de FERRERO', price: 'MX$120.00', category: 'crepes', desc: 'Nutella, fresa, lechera y chocolate ferrero' },
             { name: 'Crepa de Mazapan', price: 'MX$122.00', category: 'crepes', desc: 'Mazapán, cajeta y plátano' },
             
-            // WAFFLES
             { name: 'WAFFLE FRUTOS ROJOS', price: 'MX$135.00', category: 'waffles', desc: 'Zarzamora, fresa, frambuesa, blueberry, lechera, azúcar glass' },
             { name: 'Waffle Hawaii', price: 'MX$135.00', category: 'waffles', desc: 'Plátano, fresa, uva, durazno, lechera y miel mapple' },
             { name: 'Choco Waffle', price: 'MX$149.00', category: 'waffles', desc: 'Chocolate Kinder Delice, nutella, plátano, fresa y lechera' },
@@ -1422,14 +1439,12 @@
             { name: 'Waffle de Platano, Nutella y Fresa', price: 'MX$135.00', category: 'waffles', desc: 'Nutella, fresas y plátano' },
             { name: 'Waffle de NUTELLA y Platano', price: 'MX$130.00', category: 'waffles', desc: 'Nutella y plátano' },
             
-            // PANCAKES MINI
             { name: 'Mini-pancakes', price: 'MX$75.00', category: 'pancakes', desc: '10 pancakes con durazno, fresa, uva, lechera, nutella y mermelada' },
             { name: 'Minipancakes Banderilla', price: 'MX$65.00', category: 'pancakes', desc: '6 minipancakes con plátano y fresa' },
             { name: 'Mini Pancakes de FERRERO', price: 'MX$96.00', category: 'pancakes', desc: 'Nutella, chocolate Ferrero y fresa, 10 piezas' },
             { name: 'Mini Pancakes de NUTELLA', price: 'MX$88.00', category: 'pancakes', desc: 'Nutella, fresa y plátano, 10 piezas' },
             { name: 'Mini Pancakes Hawaii', price: 'MX$90.00', category: 'pancakes', desc: 'Miel MAPPLE, uva, fresa, durazno y plátano, 10 piezas' },
             
-            // FRESAS CON CREMA
             { name: 'Fresas con Crema y OREO', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema clásica sabor oreo, galleta oreo, crema batida' },
             { name: 'Fresas con Crema y Miel', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema tradicional, miel de abeja, ajonjolí, granola' },
             { name: 'Fresas con Crema y Mazapan', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, lechera, topping de mazapán, granillo' },
@@ -1438,7 +1453,6 @@
             { name: 'Fresas con Crema y FERRERO', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, chocolate ferrero Rocher, nutella, nuez picada' },
             { name: 'FRESAS POP', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, palomitas de caramelo y lechera' },
             
-            // FRAPPES
             { name: 'Frappe de OREO', price: 'MX$115.00', category: 'frappes', desc: 'Leche deslactosada, galleta oreo, chocolate y crema batida' },
             { name: 'Frappe de Fresa', price: 'MX$120.00', category: 'frappes', desc: 'Leche deslactosada, fresa natural y crema batida' },
             { name: 'Frappe Kinder Delice', price: 'MX$125.00', category: 'frappes', desc: 'Leche deslactosada, chocolate, crema batida y Kinder Delice' },
@@ -1446,57 +1460,37 @@
             { name: 'Frappe Piña Colada', price: 'MX$120.00', category: 'frappes', desc: 'Refrescante combinación tropical' },
             { name: 'Frappe de Mango', price: 'MX$120.00', category: 'frappes', desc: 'Pulpa de mango natural, mermelada de mango, leche deslactosada' },
             
-            // SMOOTHIES
             { name: 'Smoothie de Fresa', price: 'MX$115.00', category: 'smoothies', desc: 'Fresco y natural' },
             { name: 'Smoothie de Tamarindo', price: 'MX$110.00', category: 'smoothies', desc: 'Tropical y delicioso' },
             { name: 'Smoothie Frutos Rojos', price: 'MX$115.00', category: 'smoothies', desc: 'Mix de frutos rojos' },
             { name: 'Smoothie ICEE Cereza', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor cereza refrescante' },
             { name: 'Smoothie ICEE de Mora', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor mora delicioso' },
             
-            // BEBIDAS CALIENTES
             { name: 'Chocolate Artesanal', price: 'MX$75.00', category: 'bebidas', desc: 'Chocolate calientito artesanal' },
             { name: 'Chocolate Caliente con Bombones', price: 'MX$70.00', category: 'bebidas', desc: 'Chocolate caliente premium' },
             { name: 'Cafe Americano', price: 'MX$66.00', category: 'bebidas', desc: 'Delicioso Café Americano Punta del Cielo' },
             { name: 'Licuado de Platano', price: 'MX$69.00', category: 'bebidas', desc: 'Leche, plátano y canela' },
             
-            // COMBOS
             { name: 'FRAPPE FRESA Y OREO', price: 'MX$235.00', category: 'combos', desc: 'Frappe de OREO + Frappe de Fresa' },
             { name: 'Crepa de NUTELLA con Chocolate Calientito', price: 'MX$180.00', category: 'combos', desc: 'Crepa de Nutella + Chocolate Artesanal' }
         ];
 
         const menuGrid = document.getElementById('menuGrid');
 
-        // ============================================
-        // SCROLL REVEAL EFFECT - UNIVERSAL & INTERACTIVE
-        // ============================================
-        // Este efecto es TOTALMENTE INTERACTIVO:
-        // 1. TODOS los elementos con .scroll-reveal son observados
-        // 2. Al ENTRAR en viewport: agrega clase .reveal (aparece con animación)
-        // 3. Al SALIR de viewport: quita clase .reveal (desaparece)
-        // 4. Al volver a ENTRAR: se repite la animación (¡SIN recargar!)
-        // 5. Funciona continuamente mientras scrolleas
-        
         const observerOptions = {
             threshold: 0.15,
             rootMargin: '0px 0px -100px 0px'
         };
 
-        // Variable global para que renderMenu pueda usarla - DEFINIDA PRIMERO
         const scrollObserver = new IntersectionObserver(function(entries) {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
-                    // ENTRA en viewport: agrega la clase para animar
                     entry.target.classList.add('reveal');
                 } else {
-                    // SALE del viewport: quita la clase para poder repetir
                     entry.target.classList.remove('reveal');
                 }
             });
         }, observerOptions);
-
-        // ============================================
-        // FUNCIÓN RENDERMENU - AHORA PUEDE USAR scrollObserver
-        // ============================================
 
         function renderMenu(filter = 'todos') {
             menuGrid.innerHTML = '';
@@ -1521,7 +1515,6 @@
                 }
             });
             
-            // Re-observar todos los items del menú que se acaban de crear
             document.querySelectorAll('.menu-item-list').forEach(item => {
                 scrollObserver.observe(item);
             });
@@ -1529,7 +1522,6 @@
 
         renderMenu();
 
-        // Actualizar imágenes de productos estrella
         document.getElementById('img-fresas').src = './fresasconcremayoreo.png';
         document.getElementById('img-crepas').src = './crepademazapan.png';
         document.getElementById('img-smoothies').src = './smoothiedefrutosrojos.png';
@@ -1542,10 +1534,26 @@
             });
         });
 
-        // Observa TODOS los elementos con clase .scroll-reveal
-        // Esto incluye: product-cards, carousel, menu-items, stat-items, contact-items, etc.
         document.querySelectorAll('.scroll-reveal').forEach(element => {
             scrollObserver.observe(element);
+        });
+
+        // ============================================
+        // SOMBRA CUANDO EL MENÚ QUEDA "PEGADO"
+        // ============================================
+        const menuFilters = document.getElementById('menuFilters');
+        const menuSection = document.getElementById('menu');
+
+        window.addEventListener('scroll', () => {
+            const headerHeight = document.querySelector('header').offsetHeight;
+            const sectionTop = menuSection.getBoundingClientRect().top;
+            const sectionBottom = menuSection.getBoundingClientRect().bottom;
+
+            if (sectionTop <= headerHeight && sectionBottom > headerHeight + menuFilters.offsetHeight) {
+                menuFilters.classList.add('is-stuck');
+            } else {
+                menuFilters.classList.remove('is-stuck');
+            }
         });
 
         // SMOOTH SCROLL
