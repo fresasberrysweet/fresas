@@ -140,7 +140,7 @@
             justify-content: center;
         }
 
-        .hero-video {
+        .hero-gif {
             position: absolute;
             top: 0;
             left: 0;
@@ -1101,16 +1101,13 @@
 
     <!-- HERO -->
     <section class="hero" id="inicio">
-        <video
-            class="hero-video"
-            id="heroVideo"
-            src="./vedeo.mp4"
-            poster="https://images.unsplash.com/photo-1599599810694-b5ac4dd7b7a0?w=1200&h=600&fit=crop"
-            autoplay
-            muted
-            playsinline
-            preload="auto"
-        ></video>
+        <img
+            class="hero-gif"
+            id="heroGif"
+            src="./gif.gif"
+            alt="Fresas Berry Sweet"
+            loading="eager"
+        >
         <div class="hero-content">
             <h1>Bienvenido a Berry Sweet</h1>
             <p>Fresas frescas, Crepas deliciosas y Smoothies increibles</p>
@@ -1337,30 +1334,6 @@
         setHeaderHeightVar();
         window.addEventListener('resize', setHeaderHeightVar);
         window.addEventListener('load', setHeaderHeightVar);
-
-        // ============================================
-        // VIDEO DE FONDO DEL HERO (efecto tipo GIF)
-        // Se reproduce solo, sin controles, y al terminar
-        // espera unos segundos antes de reiniciar
-        // ============================================
-        const heroVideo = document.getElementById('heroVideo');
-
-        if (heroVideo) {
-            const PAUSE_BEFORE_REPLAY = 3500; // milisegundos (3.5s) de pausa al terminar
-
-            // Intenta reproducir en cuanto esté listo (por políticas de autoplay en móviles)
-            const tryPlay = () => heroVideo.play().catch(() => {});
-            heroVideo.addEventListener('loadedmetadata', tryPlay);
-            tryPlay();
-
-            heroVideo.addEventListener('ended', () => {
-                // Se queda "pausado" en el último fotograma unos segundos...
-                setTimeout(() => {
-                    heroVideo.currentTime = 0;
-                    tryPlay();
-                }, PAUSE_BEFORE_REPLAY);
-            });
-        }
 
         // HAMBURGER MENU
         const hamburger = document.getElementById('hamburger');
