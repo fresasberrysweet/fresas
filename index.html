@@ -447,6 +447,38 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08),
                         0 8px 16px rgba(0, 0, 0, 0.1),
                         0 12px 24px rgba(247, 37, 133, 0.08);
+            position: relative;
+        }
+
+        .quick-add-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: none;
+            background: var(--secondary);
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            box-shadow: 0 3px 8px rgba(247, 37, 133, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .quick-add-btn:hover {
+            transform: scale(1.15);
+            background: var(--primary);
+        }
+
+        .quick-add-btn.added {
+            background: var(--green);
         }
 
         .menu-item-list.reveal {
@@ -1766,7 +1798,7 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2024 Berry Seet. Todos los derechos reservados.</p>
+                <p>&copy; 2026 Berry Seet. Todos los derechos reservados.</p>
                 <p>Hecho con 💜 para los amantes de las fresas</p>
                 <div class="social-links">
                     <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -2056,6 +2088,7 @@
                     div.style.cursor = 'pointer';
                     const imageUrl = getProductImage(item.name);
                     div.innerHTML = `
+                        <button class="quick-add-btn" aria-label="Agregar al carrito">+</button>
                         <div class="menu-item-content">
                             <div class="menu-item-text">
                                 <div class="menu-item-name">${item.name}</div>
@@ -2068,6 +2101,19 @@
                         </div>
                     `;
                     div.addEventListener('click', () => openProductModal(item));
+
+                    const quickAddBtn = div.querySelector('.quick-add-btn');
+                    quickAddBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // no abrir el modal
+                        addToCart(item);
+                        quickAddBtn.classList.add('added');
+                        quickAddBtn.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            quickAddBtn.classList.remove('added');
+                            quickAddBtn.innerHTML = '+';
+                        }, 900);
+                    });
+
                     menuGrid.appendChild(div);
                 }
             });
