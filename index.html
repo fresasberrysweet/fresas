@@ -12,10 +12,6 @@
             box-sizing: border-box;
         }
 
-        img, iframe, video, svg {
-            max-width: 100%;
-        }
-
         :root {
             --primary: #ff4d6d;
             --secondary: #f72585;
@@ -451,38 +447,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08),
                         0 8px 16px rgba(0, 0, 0, 0.1),
                         0 12px 24px rgba(247, 37, 133, 0.08);
-            position: relative;
-        }
-
-        .quick-add-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: none;
-            background: var(--secondary);
-            color: white;
-            font-size: 15px;
-            font-weight: 900;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3;
-            box-shadow: 0 3px 8px rgba(247, 37, 133, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        .quick-add-btn:hover {
-            transform: scale(1.15);
-            background: var(--primary);
-        }
-
-        .quick-add-btn.added {
-            background: var(--green);
         }
 
         .menu-item-list.reveal {
@@ -1032,33 +996,6 @@
             font-size: 18px;
         }
 
-        .contact-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .contact-map {
-            margin-top: 10px;
-            border-radius: 14px;
-            overflow: hidden;
-            width: 100%;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-        }
-
-        .contact-map iframe {
-            width: 100%;
-            height: 220px;
-            display: block;
-            border: 0;
-        }
-
-        .contact-form-title {
-            color: var(--primary);
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-
         .contact-form {
             display: flex;
             flex-direction: column;
@@ -1577,7 +1514,7 @@
             <div class="header-content">
                 <div class="logo">
                     <img src="./logo.png" alt="Berry Sweet">
-                    <span class="logo-text">Berry Sweet</span>
+                    Berry Sweet
                 </div>
                 <nav id="nav">
                     <a href="#inicio">Inicio</a>
@@ -1765,7 +1702,7 @@
     <!-- CONTACTO -->
     <section class="contact" id="contacto">
         <div class="container">
-            <h2 class="section-title">Visítanos en</h2>
+            <h2 class="section-title">Ponte en Contacto</h2>
             <div class="contact-content">
                 <div class="contact-info">
                     <div class="contact-item scroll-reveal">
@@ -1774,9 +1711,7 @@
                         </div>
                         <div class="contact-text">
                             <h4>Ubicación</h4>
-                            <div class="contact-map">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d120179.7721363794!2d-99.09817237788853!3d19.728886313909683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ed00527b8f45%3A0xa0ef7372c68da753!2sBerry%20Sweet%20Postreria!5e0!3m2!1ses-419!2smx!4v1785588856654!5m2!1ses-419!2smx" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                            </div>
+                            <p>Calle Principal 123, Tu Ciudad<br>Próximo al parque central</p>
                         </div>
                     </div>
                     <div class="contact-item scroll-reveal">
@@ -1785,7 +1720,7 @@
                         </div>
                         <div class="contact-text">
                             <h4>Teléfono</h4>
-                            <p>+52 5516487599</p>
+                            <p>+34 912 345 678<br>Disponible 10am - 10pm</p>
                         </div>
                     </div>
                     <div class="contact-item scroll-reveal">
@@ -1794,7 +1729,7 @@
                         </div>
                         <div class="contact-text">
                             <h4>Email</h4>
-                            <p>fresasberrysweet@gmail.com</p>
+                            <p>contacto@berryseet.com<br>info@berryseet.com</p>
                         </div>
                     </div>
                     <div class="contact-item scroll-reveal">
@@ -1803,26 +1738,25 @@
                         </div>
                         <div class="contact-text">
                             <h4>Horario</h4>
-                            <p>Lunes a Domingo: 4:00pm - 11:00pm</p>
+                            <p>Lunes a Viernes: 10am - 10pm<br>Fines de semana: 9am - 11pm</p>
                         </div>
                     </div>
                 </div>
 
-                <form class="contact-form" id="contactForm">
-                    <h3 class="contact-form-title">Atención al Cliente</h3>
+                <form class="contact-form">
                     <div class="form-group">
-                        <input type="text" id="contactName" placeholder="Tu Nombre" required>
+                        <input type="text" placeholder="Tu Nombre" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" id="contactEmail" placeholder="Tu Email" required>
+                        <input type="email" placeholder="Tu Email" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" id="contactSubject" placeholder="Asunto">
+                        <input type="text" placeholder="Asunto">
                     </div>
                     <div class="form-group">
-                        <textarea id="contactMessage" placeholder="Tu Mensaje..." required></textarea>
+                        <textarea placeholder="Tu Mensaje..." required></textarea>
                     </div>
-                    <button type="submit" class="form-submit">Enviar Correo</button>
+                    <button type="submit" class="form-submit">Enviar Mensaje</button>
                 </form>
             </div>
         </div>
@@ -1832,17 +1766,13 @@
     <footer>
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2026 Berry Seet. Todos los derechos reservados.</p>
+                <p>&copy; 2024 Berry Seet. Todos los derechos reservados.</p>
                 <p>Hecho con 💜 para los amantes de las fresas</p>
                 <div class="social-links">
-                    <a href="https://www.facebook.com/61584099195495/mentions/" title="Facebook" target="_blank" rel="noopener">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
+                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="https://wa.me/525516487599" title="WhatsApp" target="_blank" rel="noopener">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
+                    <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
         </div>
@@ -2126,7 +2056,6 @@
                     div.style.cursor = 'pointer';
                     const imageUrl = getProductImage(item.name);
                     div.innerHTML = `
-                        <button class="quick-add-btn" aria-label="Agregar al carrito">+</button>
                         <div class="menu-item-content">
                             <div class="menu-item-text">
                                 <div class="menu-item-name">${item.name}</div>
@@ -2139,19 +2068,6 @@
                         </div>
                     `;
                     div.addEventListener('click', () => openProductModal(item));
-
-                    const quickAddBtn = div.querySelector('.quick-add-btn');
-                    quickAddBtn.addEventListener('click', (e) => {
-                        e.stopPropagation(); // no abrir el modal
-                        addToCart(item);
-                        quickAddBtn.classList.add('added');
-                        quickAddBtn.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => {
-                            quickAddBtn.classList.remove('added');
-                            quickAddBtn.innerHTML = '+';
-                        }, 900);
-                    });
-
                     menuGrid.appendChild(div);
                 }
             });
@@ -2404,35 +2320,6 @@
 
             const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
-        });
-
-        // ============================================
-        // FORMULARIO DE CONTACTO — envía por correo
-        // (abre el cliente de correo del usuario con el
-        // mensaje ya redactado hacia fresasberrysweet@gmail.com)
-        // ============================================
-        const CONTACT_EMAIL = 'fresasberrysweet@gmail.com';
-        const contactForm = document.getElementById('contactForm');
-
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const name = document.getElementById('contactName').value.trim();
-            const email = document.getElementById('contactEmail').value.trim();
-            const subject = document.getElementById('contactSubject').value.trim() || 'Contacto desde la página';
-            const message = document.getElementById('contactMessage').value.trim();
-
-            const body =
-                `Nombre: ${name}\n` +
-                `Email: ${email}\n\n` +
-                `Mensaje:\n${message}`;
-
-            const mailtoUrl =
-                `mailto:${CONTACT_EMAIL}` +
-                `?subject=${encodeURIComponent(subject)}` +
-                `&body=${encodeURIComponent(body)}`;
-
-            window.location.href = mailtoUrl;
         });
     </script>
 </body>
