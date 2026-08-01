@@ -103,7 +103,7 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            background: var(--dark);
+            background: #e01e37;
             color: white;
             font-size: 11px;
             font-weight: 800;
@@ -1412,14 +1412,22 @@
             font-weight: 600;
         }
 
-        .cart-item-remove {
-            width: 32px;
-            height: 32px;
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .cart-item-remove,
+        .cart-item-add {
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             border: 2px solid var(--secondary);
             background: white;
             color: var(--secondary);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             line-height: 1;
             cursor: pointer;
@@ -1430,8 +1438,26 @@
             transition: all 0.2s ease;
         }
 
+        .cart-item-qty-count {
+            min-width: 18px;
+            text-align: center;
+            font-weight: 800;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
         .cart-item-remove:hover {
             background: var(--secondary);
+            color: white;
+        }
+
+        .cart-item-add {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .cart-item-add:hover {
+            background: var(--green);
             color: white;
         }
 
@@ -2217,6 +2243,14 @@
             renderCart();
         }
 
+        function addOneToCart(name) {
+            const existing = cart.find(c => c.name === name);
+            if (!existing) return;
+            existing.qty += 1;
+            updateCartBadge();
+            renderCart();
+        }
+
         function getCartTotal() {
             return cart.reduce((sum, c) => sum + parsePrice(c.price) * c.qty, 0);
         }
@@ -2238,15 +2272,22 @@
                     <div class="cart-item">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${c.name}</div>
-                            <div class="cart-item-meta"><span class="cart-item-qty">${c.qty}x</span> ${c.price}</div>
+                            <div class="cart-item-meta">${c.price}</div>
                         </div>
-                        <button class="cart-item-remove" data-name="${c.name.replace(/"/g, '&quot;')}" aria-label="Quitar producto">−</button>
+                        <div class="cart-item-controls">
+                            <button class="cart-item-remove" data-name="${c.name.replace(/"/g, '&quot;')}" aria-label="Quitar una unidad">−</button>
+                            <span class="cart-item-qty-count">${c.qty}</span>
+                            <button class="cart-item-add" data-name="${c.name.replace(/"/g, '&quot;')}" aria-label="Agregar una unidad">+</button>
+                        </div>
                     </div>
                 `).join('');
                 checkoutBtn.disabled = false;
 
                 cartItemsEl.querySelectorAll('.cart-item-remove').forEach(btn => {
                     btn.addEventListener('click', () => removeOneFromCart(btn.dataset.name));
+                });
+                cartItemsEl.querySelectorAll('.cart-item-add').forEach(btn => {
+                    btn.addEventListener('click', () => addOneToCart(btn.dataset.name));
                 });
             }
             cartTotalEl.textContent = 'Total: ' + formatPrice(getCartTotal());
