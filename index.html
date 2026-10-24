@@ -1475,6 +1475,7 @@
             cursor: not-allowed;
             transform: none;
         }
+
     </style>
 </head>
 <body>
@@ -1904,12 +1905,12 @@
         function getProductImage(productName) {
             const imageFile = productImageMap[productName];
             if (imageFile) {
-                return IMAGE_BASE_URL + imageFile;
+                return /^(https?:|data:)/i.test(imageFile) ? imageFile : IMAGE_BASE_URL + imageFile;
             }
-            return 'https://via.placeholder.com/300x300?text=' + encodeURIComponent(productName);
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#fef5f9"/><text x="150" y="185" font-size="110" text-anchor="middle">🍓</text></svg>');
         }
         
-        const menuItems = [
+        let menuItems = [
             { name: 'Choco Crepa', price: 'MX$145.00', category: 'crepes', desc: 'Nutella, lechera, plátano, fresa y Kinder Delice' },
             { name: 'Crepa de Pepperoni', price: 'MX$135.00', category: 'crepes', desc: 'Salsa de tomate, queso mozzarella, pepperoni y chipotle' },
             { name: 'Crepa de Queso Philadelphia', price: 'MX$130.00', category: 'crepes', desc: 'Queso philadelphia, mermelada de zarzamora, fresa y plátano' },
@@ -2026,6 +2027,16 @@
                 scrollObserver.observe(item);
             });
         }
+
+        // Puente con Firebase: el módulo del final reemplaza el menú con lo que haya en Firestore
+        window.BerryMenu = {
+            setItems(items) {
+                menuItems = items;
+                items.forEach(i => { if (i.image) productImageMap[i.name] = i.image; });
+                const active = document.querySelector('.filter-btn.active');
+                renderMenu(active ? active.dataset.filter : 'todos');
+            }
+        };
 
         renderMenu();
 
@@ -2271,6 +2282,36 @@
             const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
         });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOqdSCerlqBgpMoanrGbzRbtfo1P0VGU4",
+            authDomain: "fresas-d8664.firebaseapp.com",
+            projectId: "fresas-d8664",
+            storageBucket: "fresas-d8664.firebasestorage.app",
+            messagingSenderId: "292549472672",
+            appId: "1:292549472672:web:f2fe127b74465ef94f74c5"
+        };
+
+        const db = getFirestore(initializeApp(firebaseConfig));
+        const fmt = (n) => 'MX$' + Number(n).toFixed(2);
+
+        // Menú en tiempo real desde Firestore (colección "productos").
+        // Si está vacía o no responde, se queda el menú original que ya trae esta página.
+        onSnapshot(collection(db, 'productos'), (snap) => {
+            const products = snap.docs.map(d => d.data())
+                .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+            if (!products.length) return;
+            // Los productos desactivados (activo === false) no se muestran
+            window.BerryMenu.setItems(products.filter(p => p.activo !== false).map(p => ({
+                name: p.nombre, price: fmt(p.precio), category: p.categoria,
+                desc: p.descripcion || '', image: p.imagen || ''
+            })));
+        }, (err) => console.error('Firestore:', err));
     </script>
 </body>
 </html>

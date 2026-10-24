@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administrador · Berry Sweet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        img { max-width: 100%; }
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #f72585;
+            --accent: #7209b7;
+            --light: #fef5f9;
+            --dark: #2d1b3d;
+            --text: #333;
+            --green: #52b788;
+        }
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            background: var(--light);
+        }
+        /* ================================================
+           ADMINISTRADOR (oculto: se abre con index.html#admin)
+           ================================================ */
+        body.adm-lock { overflow: hidden; }
+        .adm-overlay {
+            position: fixed; inset: 0; z-index: 3000;
+            background: var(--light);
+            display: none; flex-direction: column;
+        }
+        .adm-overlay.open { display: flex; }
+        .adm-top {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: #fff; padding: 14px 20px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 6px 24px rgba(247, 37, 133, 0.25);
+        }
+        .adm-top h2 { font-size: 20px; flex: 1; line-height: 1.2; }
+        .adm-top h2 small { display: block; font-size: 12px; font-weight: 400; opacity: .9; }
+        .adm-x {
+            background: rgba(255,255,255,.2); border: 0; color: #fff;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-size: 24px; line-height: 1; cursor: pointer;
+        }
+        .adm-x:hover { background: rgba(255,255,255,.32); }
+        .adm-body {
+            flex: 1; overflow-y: auto; width: 100%;
+            max-width: 860px; margin: 0 auto; padding: 18px 20px 48px;
+        }
+        .adm-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .adm-tools input, .adm-tools select, .adm-field input, .adm-field select, .adm-field textarea {
+            font: inherit; font-size: 15px; color: var(--text);
+            border: 2px solid #f1d5e0; background: #fff; border-radius: 12px;
+            padding: 10px 14px; outline: none; width: 100%;
+        }
+        .adm-tools input { flex: 1 1 200px; width: auto; }
+        .adm-tools select { flex: 0 1 170px; width: auto; }
+        .adm-tools input:focus, .adm-tools select:focus,
+        .adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus { border-color: var(--primary); }
+        .adm-btn {
+            font: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
+            border: 0; border-radius: 12px; padding: 10px 18px;
+            background: #fff; color: var(--dark); border: 2px solid #f1d5e0;
+        }
+        .adm-btn:hover { border-color: var(--primary); }
+        .adm-btn.primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border-color: transparent; }
+        .adm-btn.danger { background: #d62839; color: #fff; border-color: transparent; }
+        .adm-btn:disabled { opacity: .6; cursor: wait; }
+        .adm-btn:focus-visible, .adm-x:focus-visible, .adm-icon:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .adm-banner {
+            background: #fff; border: 2px dashed #f1d5e0; border-radius: 16px;
+            padding: 16px; margin-bottom: 14px; font-size: 14px; color: #6b5a76;
+        }
+        .adm-banner.err { border-color: #d62839; color: #8a1623; background: #fff5f6; }
+        .adm-banner .adm-btn { margin-top: 10px; }
+        .adm-row {
+            display: flex; align-items: center; gap: 12px;
+            background: #fff; border-radius: 16px; padding: 10px 12px; margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(114, 9, 183, 0.07);
+        }
+        .adm-row img { width: 54px; height: 54px; border-radius: 12px; object-fit: cover; background: var(--light); flex: none; }
+        .adm-row-info { flex: 1; min-width: 0; }
+        .adm-row-name { font-weight: 600; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .adm-row-meta { font-size: 13px; color: #8b7a96; }
+        .adm-row-meta b { color: var(--secondary); font-weight: 600; }
+        .adm-icon {
+            flex: none; width: 40px; height: 40px; border-radius: 50%;
+            border: 0; cursor: pointer; font-size: 15px;
+            background: var(--light); color: var(--accent);
+        }
+        .adm-icon.del { color: #d62839; }
+        .adm-icon:hover { background: #fde4ee; }
+        .adm-empty { text-align: center; color: #8b7a96; padding: 40px 10px; }
+
+        .adm-modal-bg {
+            position: fixed; inset: 0; z-index: 3100;
+            background: rgba(45, 27, 61, 0.6);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; padding: 16px;
+        }
+        .adm-modal-bg.open { display: flex; }
+        .adm-modal-bg.top { z-index: 3200; }
+        .adm-modal {
+            background: #fff; border-radius: 24px; width: 100%; max-width: 440px;
+            max-height: 92vh; overflow-y: auto; padding: 24px;
+            box-shadow: 0 20px 60px rgba(45, 27, 61, 0.35);
+        }
+        .adm-modal h3 { color: var(--dark); font-size: 20px; margin-bottom: 14px; }
+        .adm-modal p { color: #6b5a76; font-size: 15px; margin-bottom: 18px; }
+        .adm-field { margin-bottom: 12px; }
+        .adm-field label { display: block; font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+        .adm-field textarea { min-height: 76px; resize: vertical; }
+        .adm-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .adm-img-line { display: flex; gap: 10px; align-items: center; }
+        .adm-img-line img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--light); flex: none; }
+        .adm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+        .adm-toast {
+            position: fixed; left: 50%; bottom: 24px; z-index: 3300;
+            transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+            background: var(--dark); color: #fff; padding: 12px 20px; border-radius: 14px;
+            font-size: 14px; max-width: calc(100vw - 32px); text-align: center;
+            transition: opacity .25s ease, transform .25s ease;
+        }
+        .adm-toast.show { opacity: 1; transform: translate(-50%, 0); }
+        .adm-toast.err { background: #d62839; }
+        .adm-row.off img, .adm-row.off .adm-row-info { opacity: .5; }
+        .adm-row.off img { filter: grayscale(1); }
+        .adm-off-tag { color: #d62839; font-weight: 600; }
+        .adm-switch { position: relative; flex: none; width: 46px; height: 26px; display: inline-block; }
+        .adm-switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+        .adm-switch span { position: absolute; inset: 0; background: #d9c9e3; border-radius: 26px; transition: background .2s ease; }
+        .adm-switch span::after {
+            content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+            background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+            transition: transform .2s ease;
+        }
+        .adm-switch input:checked + span { background: var(--green); }
+        .adm-switch input:checked + span::after { transform: translateX(20px); }
+        .adm-switch input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+        .adm-upload-line { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .adm-upload-line small { color: #8b7a96; font-size: 13px; }
+        @media (max-width: 480px) {
+            .adm-two { grid-template-columns: 1fr; }
+            .adm-actions .adm-btn { flex: 1; }
+        }
+        a.adm-x { display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="adm-overlay open" id="admOverlay">
+        <div class="adm-top">
+            <h2>Administrador <small id="admCount">Cargando productos…</small></h2>
+            <a class="adm-x" href="index.html" aria-label="Ver el menú" title="Ver el menú"><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+        <div class="adm-body">
+            <div class="adm-tools">
+                <input type="search" id="admSearch" placeholder="Buscar producto" aria-label="Buscar producto">
+                <select id="admFilter" aria-label="Filtrar por categoría">
+                    <option value="todos">Todas las categorías</option>
+                    <option value="crepes">Crepas</option>
+                    <option value="waffles">Waffles</option>
+                    <option value="pancakes">Pancakes</option>
+                    <option value="frappes">Frappes</option>
+                    <option value="fresas">Fresas</option>
+                    <option value="smoothies">Smoothies</option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="combos">Combos</option>
+                </select>
+                <button class="adm-btn primary" id="admNew"><i class="fas fa-plus"></i> Nuevo producto</button>
+            </div>
+            <div id="admBanner"></div>
+            <div id="admList"></div>
+        </div>
+    </div>
+
+    <div class="adm-modal-bg" id="admFormBg">
+        <form class="adm-modal" id="admForm" autocomplete="off">
+            <h3 id="admFormTitle">Nuevo producto</h3>
+            <div class="adm-field">
+                <label for="admNombre">Nombre</label>
+                <input id="admNombre" required maxlength="80">
+            </div>
+            <div class="adm-two">
+                <div class="adm-field">
+                    <label for="admPrecio">Precio (MX$)</label>
+                    <input id="admPrecio" type="number" step="0.01" min="0" required inputmode="decimal">
+                </div>
+                <div class="adm-field">
+                    <label for="admCategoria">Categoría</label>
+                    <select id="admCategoria">
+                        <option value="crepes">Crepas</option>
+                        <option value="waffles">Waffles</option>
+                        <option value="pancakes">Pancakes</option>
+                        <option value="frappes">Frappes</option>
+                        <option value="fresas">Fresas</option>
+                        <option value="smoothies">Smoothies</option>
+                        <option value="bebidas">Bebidas</option>
+                        <option value="combos">Combos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="adm-field">
+                <label for="admDescripcion">Descripción</label>
+                <textarea id="admDescripcion" maxlength="300"></textarea>
+            </div>
+            <div class="adm-field">
+                <label for="admImagen">Imagen</label>
+                <div class="adm-img-line">
+                    <input id="admImagen" placeholder="Sube una imagen, o escribe chococrepa.png o un enlace">
+                    <img id="admPreview" alt="">
+                </div>
+                <div class="adm-upload-line">
+                    <button type="button" class="adm-btn" id="admUpload"><i class="fas fa-cloud-arrow-up"></i> Subir imagen</button>
+                    <small id="admUpStatus"></small>
+                    <input type="file" id="admFile" accept="image/*" hidden>
+                </div>
+            </div>
+            <div class="adm-actions">
+                <button type="button" class="adm-btn" id="admCancel">Cancelar</button>
+                <button type="submit" class="adm-btn primary" id="admSave">Agregar producto</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="adm-modal-bg top" id="admConfirmBg">
+        <div class="adm-modal" role="alertdialog" aria-labelledby="admConfirmTitle">
+            <h3 id="admConfirmTitle">Eliminar producto</h3>
+            <p id="admConfirmText"></p>
+            <div class="adm-actions">
+                <button class="adm-btn" id="admConfirmNo">Cancelar</button>
+                <button class="adm-btn danger" id="admConfirmYes">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    <div class="adm-toast" id="admToast" role="status" aria-live="polite"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import {
+            getFirestore, collection, onSnapshot, addDoc, updateDoc,
+            deleteDoc, doc, writeBatch, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOqdSCerlqBgpMoanrGbzRbtfo1P0VGU4",
+            authDomain: "fresas-d8664.firebaseapp.com",
+            projectId: "fresas-d8664",
+            storageBucket: "fresas-d8664.firebasestorage.app",
+            messagingSenderId: "292549472672",
+            appId: "1:292549472672:web:f2fe127b74465ef94f74c5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const productosCol = collection(db, 'productos');
+
+        // Cloudinary (subida sin firma desde el navegador)
+        const CLOUDINARY = { cloudName: 'n86qnh7r', uploadPreset: 'fresas_unsigned' };
+
+        const CATS = { crepes: 'Crepas', waffles: 'Waffles', pancakes: 'Pancakes', frappes: 'Frappes',
+                       fresas: 'Fresas', smoothies: 'Smoothies', bebidas: 'Bebidas', combos: 'Combos' };
+        const fmt = (n) => 'MX$' + Number(n).toFixed(2);
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const $ = (id) => document.getElementById(id);
+
+        const IMAGE_MAP = {
+            'Choco Crepa': 'chococrepa.png',
+            'Crepa de Pepperoni': 'crepadepepperoni.png',
+            'Crepa de Queso Philadelphia': 'crepadequesophiladelphia.png',
+            'Crepa Hawaiana': 'crepahawaiana.png',
+            'Crepa de NUTELLA': 'crepadenutella.png',
+            'Crepa Frutos Rojos': 'crepadefrutosrojos.png',
+            'Crepa de NUTELLA y Plátano': 'crepadenutellayplatano.png',
+            'Crepa de Durazno': 'crepadedurazno.png',
+            'Crepa de Fresas con Crema': 'crepadefresasconcrema.png',
+            'Crepa de FERRERO': 'crepadeferrero.png',
+            'Crepa de Mazapan': 'crepademazapan.png',
+            
+            'WAFFLE FRUTOS ROJOS': 'waffledefrutosrojos.png',
+            'Waffle Hawaii': 'wafflehawaii.png',
+            'Choco Waffle': 'chocowaffle.png',
+            'Waffle de Ferrero': 'wafledeferrero.png',
+            'Waffle de Fresa y Nutella': 'waffledefresaynutella.png',
+            'Waffle de Platano, Nutella y Fresa': 'waffledeplatanonutellayfresa.png',
+            'Waffle de NUTELLA y Platano': 'waffledenutellayplatano.png',
+            
+            'Mini-pancakes': 'minipancakes.png',
+            'Minipancakes Banderilla': 'minipancakesbanderilla.png',
+            'Mini Pancakes de FERRERO': 'minipancakesdeferrero.png',
+            'Mini Pancakes de NUTELLA': 'minipancakesdenutella.png',
+            'Mini Pancakes Hawaii': 'minipancakeshawai.png',
+            
+            'Fresas con Crema y OREO': 'fresasconcremayoreo.png',
+            'Fresas con Crema y Miel': 'fresasconcremaymiel.png',
+            'Fresas con Crema y Mazapan': 'fresasconcremaymazapan.png',
+            'Fresas con Crema Clasicas': 'fresasconcremaclasicas.png',
+            'Fresas con Crema de Moka': 'fresasconcremademoka.png',
+            'Fresas con Crema y FERRERO': 'fresasconcremayferrero.png',
+            'FRESAS POP': 'fresaspop.png',
+            
+            'Frappe de OREO': 'frappedeoreo.png',
+            'Frappe de Fresa': 'frappedefresa.png',
+            'Frappe Kinder Delice': 'frappedekinderdelice.png',
+            'Frappe de Mazapan': 'frappedemazapan.png',
+            'Frappe Piña Colada': 'frappedepiñacolada.png',
+            'Frappe de Mango': 'frappedemango.png',
+            
+            'Smoothie de Fresa': 'smoothiedefresa.png',
+            'Smoothie de Tamarindo': 'smoothiedetamarindo.png',
+            'Smoothie Frutos Rojos': 'smoothiedefrutosrojos.png',
+            'Smoothie ICEE Cereza': 'ice.png',
+            'Smoothie ICEE de Mora': 'ice.png',
+            
+            'Chocolate Artesanal': 'chocolateartesanal.png',
+            'Chocolate Caliente con Bombones': 'chocolatecalientito.png',
+            'Cafe Americano': 'cafeamericano.png',
+            'Licuado de Platano': 'licuadodeplatano.png',
+            
+            'FRAPPE FRESA Y OREO': 'combo-frappefresayoreo.png',
+            'Crepa de NUTELLA con Chocolate Calientito': 'combo-crepadenutellaconchocolatecalientito.png'
+        };
+
+        const SEED = [
+            { name: 'Choco Crepa', price: 'MX$145.00', category: 'crepes', desc: 'Nutella, lechera, plátano, fresa y Kinder Delice' },
+            { name: 'Crepa de Pepperoni', price: 'MX$135.00', category: 'crepes', desc: 'Salsa de tomate, queso mozzarella, pepperoni y chipotle' },
+            { name: 'Crepa de Queso Philadelphia', price: 'MX$130.00', category: 'crepes', desc: 'Queso philadelphia, mermelada de zarzamora, fresa y plátano' },
+            { name: 'Crepa Hawaiana', price: 'MX$135.00', category: 'crepes', desc: 'Queso, salsa de tomate, jamón y piña' },
+            { name: 'Crepa de NUTELLA', price: 'MX$120.00', category: 'crepes', desc: 'Fresa, plátano, nutella y lechera' },
+            { name: 'Crepa Frutos Rojos', price: 'MX$135.00', category: 'crepes', desc: 'Queso philadelphia, zarzamora, blueberry, frambuesa, fresa' },
+            { name: 'Crepa de NUTELLA y Plátano', price: 'MX$115.00', category: 'crepes', desc: 'Nutella y plátano' },
+            { name: 'Crepa de Durazno', price: 'MX$115.00', category: 'crepes', desc: 'Mermelada de durazno, duraznos picados y lechera' },
+            { name: 'Crepa de Fresas con Crema', price: 'MX$135.00', category: 'crepes', desc: 'Fresas, crema clásica, lechera y ajonjolí garapiñado' },
+            { name: 'Crepa de FERRERO', price: 'MX$120.00', category: 'crepes', desc: 'Nutella, fresa, lechera y chocolate ferrero' },
+            { name: 'Crepa de Mazapan', price: 'MX$122.00', category: 'crepes', desc: 'Mazapán, cajeta y plátano' },
+            
+            { name: 'WAFFLE FRUTOS ROJOS', price: 'MX$135.00', category: 'waffles', desc: 'Zarzamora, fresa, frambuesa, blueberry, lechera, azúcar glass' },
+            { name: 'Waffle Hawaii', price: 'MX$135.00', category: 'waffles', desc: 'Plátano, fresa, uva, durazno, lechera y miel mapple' },
+            { name: 'Choco Waffle', price: 'MX$149.00', category: 'waffles', desc: 'Chocolate Kinder Delice, nutella, plátano, fresa y lechera' },
+            { name: 'Waffle de Ferrero', price: 'MX$135.00', category: 'waffles', desc: 'Chocolate ferrero, nutella y fresa' },
+            { name: 'Waffle de Fresa y Nutella', price: 'MX$130.00', category: 'waffles', desc: 'Nutella y fresa' },
+            { name: 'Waffle de Platano, Nutella y Fresa', price: 'MX$135.00', category: 'waffles', desc: 'Nutella, fresas y plátano' },
+            { name: 'Waffle de NUTELLA y Platano', price: 'MX$130.00', category: 'waffles', desc: 'Nutella y plátano' },
+            
+            { name: 'Mini-pancakes', price: 'MX$75.00', category: 'pancakes', desc: '10 pancakes con durazno, fresa, uva, lechera, nutella y mermelada' },
+            { name: 'Minipancakes Banderilla', price: 'MX$65.00', category: 'pancakes', desc: '6 minipancakes con plátano y fresa' },
+            { name: 'Mini Pancakes de FERRERO', price: 'MX$96.00', category: 'pancakes', desc: 'Nutella, chocolate Ferrero y fresa, 10 piezas' },
+            { name: 'Mini Pancakes de NUTELLA', price: 'MX$88.00', category: 'pancakes', desc: 'Nutella, fresa y plátano, 10 piezas' },
+            { name: 'Mini Pancakes Hawaii', price: 'MX$90.00', category: 'pancakes', desc: 'Miel MAPPLE, uva, fresa, durazno y plátano, 10 piezas' },
+            
+            { name: 'Fresas con Crema y OREO', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema clásica sabor oreo, galleta oreo, crema batida' },
+            { name: 'Fresas con Crema y Miel', price: 'MX$125.00', category: 'fresas', desc: '14 oz. Crema tradicional, miel de abeja, ajonjolí, granola' },
+            { name: 'Fresas con Crema y Mazapan', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, lechera, topping de mazapán, granillo' },
+            { name: 'Fresas con Crema Clasicas', price: 'MX$125.00', category: 'fresas', desc: 'Crema, chocolate, lechera y crema batida' },
+            { name: 'Fresas con Crema de Moka', price: 'MX$125.00', category: 'fresas', desc: 'Crema sabor Moka, chocolates, lechera y crema batida' },
+            { name: 'Fresas con Crema y FERRERO', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, chocolate ferrero Rocher, nutella, nuez picada' },
+            { name: 'FRESAS POP', price: 'MX$125.00', category: 'fresas', desc: 'Crema clásica, palomitas de caramelo y lechera' },
+            
+            { name: 'Frappe de OREO', price: 'MX$115.00', category: 'frappes', desc: 'Leche deslactosada, galleta oreo, chocolate y crema batida' },
+            { name: 'Frappe de Fresa', price: 'MX$120.00', category: 'frappes', desc: 'Leche deslactosada, fresa natural y crema batida' },
+            { name: 'Frappe Kinder Delice', price: 'MX$125.00', category: 'frappes', desc: 'Leche deslactosada, chocolate, crema batida y Kinder Delice' },
+            { name: 'Frappe de Mazapan', price: 'MX$115.00', category: 'frappes', desc: 'Leche deslactosada, mazapán, chocolate y crema batida' },
+            { name: 'Frappe Piña Colada', price: 'MX$120.00', category: 'frappes', desc: 'Refrescante combinación tropical' },
+            { name: 'Frappe de Mango', price: 'MX$120.00', category: 'frappes', desc: 'Pulpa de mango natural, mermelada de mango, leche deslactosada' },
+            
+            { name: 'Smoothie de Fresa', price: 'MX$115.00', category: 'smoothies', desc: 'Fresco y natural' },
+            { name: 'Smoothie de Tamarindo', price: 'MX$110.00', category: 'smoothies', desc: 'Tropical y delicioso' },
+            { name: 'Smoothie Frutos Rojos', price: 'MX$115.00', category: 'smoothies', desc: 'Mix de frutos rojos' },
+            { name: 'Smoothie ICEE Cereza', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor cereza refrescante' },
+            { name: 'Smoothie ICEE de Mora', price: 'MX$115.00', category: 'smoothies', desc: 'Sabor mora delicioso' },
+            
+            { name: 'Chocolate Artesanal', price: 'MX$75.00', category: 'bebidas', desc: 'Chocolate calientito artesanal' },
+            { name: 'Chocolate Caliente con Bombones', price: 'MX$70.00', category: 'bebidas', desc: 'Chocolate caliente premium' },
+            { name: 'Cafe Americano', price: 'MX$66.00', category: 'bebidas', desc: 'Delicioso Café Americano Punta del Cielo' },
+            { name: 'Licuado de Platano', price: 'MX$69.00', category: 'bebidas', desc: 'Leche, plátano y canela' },
+            
+            { name: 'FRAPPE FRESA Y OREO', price: 'MX$235.00', category: 'combos', desc: 'Frappe de OREO + Frappe de Fresa' },
+            { name: 'Crepa de NUTELLA con Chocolate Calientito', price: 'MX$180.00', category: 'combos', desc: 'Crepa de Nutella + Chocolate Artesanal' }
+        ];
+
+        const PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#fef5f9"/><text x="150" y="185" font-size="110" text-anchor="middle">🍓</text></svg>');
+        const seedList = () => SEED.map(i => ({
+            name: i.name, price: i.price, category: i.category,
+            desc: i.desc || '', image: IMAGE_MAP[i.name] || ''
+        }));
+
+        let products = [];      // documentos de Firestore: {id, nombre, precio, categoria, descripcion, imagen, orden}
+        let loadError = null;
+        let loaded = false;
+
+        // ---------- Menú público en tiempo real ----------
+        onSnapshot(productosCol, (snap) => {
+            products = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+            loadError = null;
+            loaded = true;
+            renderAdmin();
+        }, (err) => {
+            console.error('Firestore:', err);
+            loadError = err;
+            renderAdmin();   // el menú original sigue visible como respaldo
+        });
+
+        // ---------- Administrador oculto ----------
+        function imgSrc(v) {
+            if (!v) return PLACEHOLDER;
+            return /^(https?:|data:)/i.test(v) ? v : './' + v;
+        }
+
+        function renderAdmin() {
+            const q = $('admSearch').value.trim().toLowerCase();
+            const cat = $('admFilter').value;
+            const list = products.filter(p =>
+                (cat === 'todos' || p.categoria === cat) &&
+                (!q || (p.nombre || '').toLowerCase().includes(q)));
+
+            $('admCount').textContent = loaded ? `${products.length} productos · ${products.filter(p => p.activo !== false).length} visibles en el menú` : 'Cargando productos…';
+
+            const banner = $('admBanner');
+            if (loadError) {
+                banner.innerHTML = `<div class="adm-banner err"><b>No se pudo conectar con Firestore</b> (${esc(loadError.code || loadError.message)}).<br>
+                    Revisa que la base de datos esté creada en la consola de Firebase y que las reglas permitan leer y escribir.
+                    Mientras tanto el sitio muestra el menú original.</div>`;
+            } else if (loaded && products.length === 0) {
+                const n = seedList().length;
+                banner.innerHTML = `<div class="adm-banner">Todavía no hay productos en Firebase, por eso el sitio muestra el menú original.
+                    Puedes copiar los ${n} productos actuales a la base de datos para empezar a editarlos.<br>
+                    <button class="adm-btn primary" id="admImport">Importar menú inicial (${n} productos)</button></div>`;
+                $('admImport').onclick = importSeed;
+            } else {
+                banner.innerHTML = '';
+            }
+
+            $('admList').innerHTML = list.length ? list.map(p => `
+                <div class="adm-row${p.activo === false ? ' off' : ''}">
+                    <img src="${esc(imgSrc(p.imagen))}" alt="" loading="lazy">
+                    <div class="adm-row-info">
+                        <div class="adm-row-name">${esc(p.nombre)}</div>
+                        <div class="adm-row-meta"><b>${fmt(p.precio)}</b> · ${esc(CATS[p.categoria] || p.categoria)}${p.activo === false ? ' · <span class="adm-off-tag">Oculto</span>' : ''}</div>
+                    </div>
+                    <label class="adm-switch" title="${p.activo === false ? 'Mostrar en el menú' : 'Ocultar del menú'}"><input type="checkbox" data-toggle="${p.id}" ${p.activo === false ? '' : 'checked'} aria-label="Mostrar ${esc(p.nombre)} en el menú"><span></span></label>
+                    <button class="adm-icon" data-edit="${p.id}" aria-label="Editar ${esc(p.nombre)}"><i class="fas fa-pen"></i></button>
+                    <button class="adm-icon del" data-del="${p.id}" aria-label="Eliminar ${esc(p.nombre)}"><i class="fas fa-trash"></i></button>
+                </div>`).join('')
+                : (loaded && products.length ? '<div class="adm-empty">Ningún producto coincide con la búsqueda.</div>' : '');
+        }
+
+        let toastTimer;
+        function toast(msg, isErr = false) {
+            const t = $('admToast');
+            t.textContent = msg;
+            t.classList.toggle('err', isErr);
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        async function importSeed() {
+            const btn = $('admImport');
+            btn.disabled = true;
+            try {
+                const batch = writeBatch(db);
+                seedList().forEach((p, i) => {
+                    batch.set(doc(productosCol), {
+                        nombre: p.name,
+                        precio: parseFloat(p.price.replace('MX$', '').replace(',', '')) || 0,
+                        categoria: p.category,
+                        descripcion: p.desc,
+                        imagen: p.image,
+                        orden: i + 1,
+                        activo: true,
+                        creado: serverTimestamp()
+                    });
+                });
+                await batch.commit();
+                toast('Menú inicial importado');
+            } catch (e) {
+                console.error(e);
+                btn.disabled = false;
+                toast('No se pudo importar: ' + (e.code || e.message), true);
+            }
+        }
+
+        // Formulario agregar / editar
+        let editingId = null;
+        function openForm(p) {
+            editingId = p ? p.id : null;
+            $('admFormTitle').textContent = p ? 'Editar producto' : 'Nuevo producto';
+            $('admSave').textContent = p ? 'Guardar cambios' : 'Agregar producto';
+            $('admNombre').value = p ? p.nombre : '';
+            $('admPrecio').value = p ? p.precio : '';
+            $('admCategoria').value = p ? p.categoria : (['todos', ''].includes($('admFilter').value) ? 'crepes' : $('admFilter').value);
+            $('admDescripcion').value = p ? (p.descripcion || '') : '';
+            $('admImagen').value = p ? (p.imagen || '') : '';
+            updatePreview();
+            $('admUpStatus').textContent = '';
+            $('admFormBg').classList.add('open');
+            $('admNombre').focus();
+        }
+        const closeForm = () => $('admFormBg').classList.remove('open');
+        function updatePreview() { $('admPreview').src = imgSrc($('admImagen').value.trim()); }
+
+        $('admForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = $('admNombre').value.trim();
+            const precio = parseFloat($('admPrecio').value);
+            if (!nombre || !(precio >= 0)) { toast('Escribe un nombre y un precio válido', true); return; }
+            if (products.some(p => p.id !== editingId && (p.nombre || '').toLowerCase() === nombre.toLowerCase())) {
+                toast('Ya existe un producto con ese nombre', true); return;
+            }
+            const data = {
+                nombre, precio,
+                categoria: $('admCategoria').value,
+                descripcion: $('admDescripcion').value.trim(),
+                imagen: $('admImagen').value.trim()
+            };
+            const btn = $('admSave');
+            btn.disabled = true;
+            try {
+                if (editingId) {
+                    await updateDoc(doc(db, 'productos', editingId), data);
+                    toast('Cambios guardados');
+                } else {
+                    data.orden = products.reduce((m, p) => Math.max(m, p.orden || 0), 0) + 1;
+                    data.activo = true;
+                    data.creado = serverTimestamp();
+                    await addDoc(productosCol, data);
+                    toast('Producto agregado');
+                }
+                closeForm();
+            } catch (err) {
+                console.error(err);
+                toast('No se pudo guardar: ' + (err.code || err.message), true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Confirmación de borrado
+        let deletingId = null;
+        function askDelete(p) {
+            deletingId = p.id;
+            $('admConfirmText').textContent = `¿Eliminar «${p.nombre}» del menú? Esta acción no se puede deshacer.`;
+            $('admConfirmBg').classList.add('open');
+        }
+        const closeConfirm = () => $('admConfirmBg').classList.remove('open');
+        $('admConfirmNo').onclick = closeConfirm;
+        $('admConfirmYes').onclick = async () => {
+            const id = deletingId;
+            closeConfirm();
+            try {
+                await deleteDoc(doc(db, 'productos', id));
+                toast('Producto eliminado');
+            } catch (err) {
+                console.error(err);
+                toast('No se pudo eliminar: ' + (err.code || err.message), true);
+            }
+        };
+
+        // Switch mostrar / ocultar producto
+        $('admList').addEventListener('change', async (e) => {
+            const t = e.target.closest('[data-toggle]');
+            if (!t) return;
+            try {
+                await updateDoc(doc(db, 'productos', t.dataset.toggle), { activo: t.checked });
+                toast(t.checked ? 'Producto visible en el menú' : 'Producto oculto del menú');
+            } catch (err) {
+                console.error(err);
+                t.checked = !t.checked;
+                toast('No se pudo cambiar: ' + (err.code || err.message), true);
+            }
+        });
+
+        // Subir imagen a Cloudinary
+        $('admUpload').onclick = () => $('admFile').click();
+        $('admFile').addEventListener('change', async () => {
+            const file = $('admFile').files[0];
+            $('admFile').value = '';
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { toast('Elige un archivo de imagen', true); return; }
+            if (file.size > 10 * 1024 * 1024) { toast('La imagen pesa más de 10 MB', true); return; }
+            const up = $('admUpload'), save = $('admSave');
+            up.disabled = save.disabled = true;
+            $('admUpStatus').textContent = 'Subiendo imagen…';
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('upload_preset', CLOUDINARY.uploadPreset);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`, { method: 'POST', body: fd });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.error?.message || 'Error al subir');
+                // f_auto,q_auto,w_700: formato y calidad automáticos y tamaño ligero para el menú
+                $('admImagen').value = json.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_700/');
+                updatePreview();
+                $('admUpStatus').textContent = 'Imagen lista. Guarda el producto para aplicarla.';
+            } catch (err) {
+                console.error(err);
+                $('admUpStatus').textContent = '';
+                toast('No se pudo subir la imagen: ' + err.message, true);
+            } finally {
+                up.disabled = save.disabled = false;
+            }
+        });
+
+        // Eventos
+        $('admList').addEventListener('click', (e) => {
+            const ed = e.target.closest('[data-edit]');
+            const del = e.target.closest('[data-del]');
+            if (ed) openForm(products.find(p => p.id === ed.dataset.edit));
+            if (del) askDelete(products.find(p => p.id === del.dataset.del));
+        });
+        $('admNew').onclick = () => openForm(null);
+        $('admCancel').onclick = closeForm;
+        $('admImagen').addEventListener('input', updatePreview);
+        $('admSearch').addEventListener('input', renderAdmin);
+        $('admFilter').addEventListener('change', renderAdmin);
+        [$('admFormBg'), $('admConfirmBg')].forEach(bg => bg.addEventListener('click', (e) => {
+            if (e.target === bg) bg.classList.remove('open');
+        }));
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if ($('admConfirmBg').classList.contains('open')) closeConfirm();
+            else if ($('admFormBg').classList.contains('open')) closeForm();
+        });
+        renderAdmin();
+    </script>
+</body>
+</html>
