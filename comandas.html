@@ -89,6 +89,8 @@ header .tabs{display:flex;gap:6px;margin-bottom:8px}
 #fi .pc{color:var(--pri);font-weight:800;font-size:20px;margin:4px 0 8px}
 #fi p{white-space:pre-line;line-height:1.45;margin:0 0 14px}
 .row .inf,.row img{cursor:pointer}
+#adm{width:100%;height:calc(100dvh - 150px);border:0;border-radius:14px;background:#fff;display:block}
+.tr span{min-width:0}.tr button{min-width:42px}
 img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--pri2);flex:none;display:block}
 .th2{width:26px;height:26px;border-radius:6px;object-fit:cover;background:var(--pri2)}
 .fs{display:flex;gap:3px;flex:none}
@@ -103,7 +105,11 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
   <div class="chips" id="chips"></div></div>
 </header>
 <main id="ords" style="display:none"></main>
-<main id="aj" style="display:none"></main>
+<main id="aj" style="display:none">
+  <div class="seg" id="ajs" style="margin-bottom:10px"><button class="on" data-s="p">Productos</button><button data-s="o">Opciones de armado</button></div>
+  <iframe id="adm" title="Productos"></iframe>
+  <div id="ajo" style="display:none"></div>
+</main>
 <main id="his" style="display:none"></main>
 <div id="arm"><div class="hd"><h2><span>Armar producto</span><button class="x" id="acl">✕</button></h2>
 <div class="seg" id="av"></div><div class="chips" id="agt"></div>
@@ -160,7 +166,7 @@ function toast(t) { const el = $('toast'); el.textContent = t; el.style.display 
 onSnapshot(collection(db, 'productos'), snap => {
   all = snap.docs.map(d => ({ id: d.id, ...d.data() })); products = all.filter(p => p.activo !== false);
   products.forEach(p => { p._n = norm(p.nombre).split(/\s+/); p._d = norm(p.descripcion).split(/[\s,.;]+/); p._f = norm(p.nombre); });
-  renderChips(); if (view === 'aj') renderPl(); else render();
+  renderChips(); if (view === 'menu') render();
 }, () => { $('list').innerHTML = '<div class="empty">No se pudo cargar el menú. Revisa tu conexión.</div>'; });
 
 const th = (src, c = 'th') => src ? `<img class="${c}" src="${esc(img(src))}" alt="" loading="lazy">` : '';
@@ -209,7 +215,7 @@ function setView(v) {
   $('mh').style.display = $('list').style.display = $('bar').style.display = v === 'menu' ? '' : 'none';
   $('aj').style.display = v === 'aj' ? '' : 'none'; $('his').style.display = v === 'his' ? '' : 'none';
   $('ords').style.display = v === 'ords' ? '' : 'none';
-  if (v === 'ords') renderOrds(); else if (v === 'aj') renderAj(); else if (v === 'his') { listenHis(); renderHis(); } else render();
+  if (v === 'ords') renderOrds(); else if (v === 'aj') { if (!$('adm').getAttribute('src')) $('adm').src = ADMIN_URL; renderAj(); } else if (v === 'his') { listenHis(); renderHis(); } else render();
 }
 document.querySelector('.tabs').onclick = e => { if (e.target.closest('[data-v]')) setView(e.target.closest('[data-v]').dataset.v); };
 $('ords').onclick = e => {
@@ -326,15 +332,22 @@ function pickPhoto() {
     f.click();
   });
 }
+const ADMIN_URL = 'admin.html'; // el admin de productos que ya tienes
+let oFil = '';
+$('adm').onload = () => { try { const d = $('adm').contentDocument, st = d.createElement('style'); st.textContent = '.adm-x{display:none!important}'; d.head.appendChild(st); } catch (e) {} };
+$('ajs').onclick = e => {
+  const k = e.target.dataset.s; if (!k) return;
+  [...$('ajs').children].forEach(b => b.classList.toggle('on', b.dataset.s === k));
+  $('adm').style.display = k === 'p' ? '' : 'none'; $('ajo').style.display = k === 'o' ? '' : 'none';
+  if (k === 'o') renderAj();
+};
 function renderAj() {
-  const f = $('pf')?.value || '';
-  $('aj').innerHTML = `<div class="aj"><h3>Opciones de armado</h3><button class="b" id="cs">Cargar lista inicial</button><small>Agrega toppings, coberturas, frutas y cremas que falten.</small></div>
+  const l = tops.filter(t => !oFil || gOf(t) === oFil);
+  $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar toppings, coberturas, frutas y cremas</button><small>Solo agrega las que falten.</small></div>
   <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff"><option value="topping">Toppings</option><option value="cobertura">Coberturas</option><option value="fruta">Frutas</option><option value="crema">Cremas</option></select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
-  <div class="aj"><h3>Productos (${all.length})</h3><input id="pf" placeholder="Filtrar por nombre…"><div id="pl"></div></div>
-  <div class="aj"><h3>Opciones (${tops.length})</h3>${tops.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)} <small>${GN[gOf(t)]}</small>${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}${t.imagen ? ' 🖼' : ''}</span><button data-ti="${t.id}">Foto</button><button data-tt="${t.id}">${t.activo === false ? 'Activar' : 'Ocultar'}</button><button data-td="${t.id}">✕</button></div>`).join('') || '<div class="empty">Aún no hay toppings</div>'}</div>`;
-  $('pf').value = f; renderPl();
+  <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GO.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
+  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)]}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button data-tt="${t.id}" aria-label="Mostrar u ocultar">${t.activo === false ? '👁' : '🙈'}</button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar toppings, coberturas…".</div>'}</div>`;
 }
-$('aj').oninput = e => { if (e.target.id === 'pf') renderPl(); };
 $('aj').onclick = async e => {
   const t = e.target, id = t.dataset.ti || t.dataset.tt || t.dataset.td;
   if (t.id === 'cs') {
@@ -347,6 +360,7 @@ $('aj').onclick = async e => {
     lines.forEach(l => { const [n, x] = l.split(','); addDoc(collection(db, 'toppings'), { nombre: n.trim(), grupo: $('cgp').value, extra: parseFloat(x) || 0, activo: true, imagen: '' }); });
     $('cl').value = ''; toast(`${lines.length} agregados ✓`);
   }
+  if (t.dataset.of !== undefined) { oFil = t.dataset.of; renderAj(); }
   if (t.dataset.pt) { const o = all.find(x => x.id === t.dataset.pt); updateDoc(doc(db, 'productos', o.id), { activo: o.activo === false }); }
   if (t.dataset.pe) {
     const o = all.find(x => x.id === t.dataset.pe);
@@ -371,11 +385,6 @@ $('fiBg').onclick = e => {
   if (a) { const p = products.find(x => x.id === a); (cart[a] ||= { id: a, nombre: p.nombre, precio: Number(p.precio) || 0, cant: 0, nota: '', img: p.imagen || '' }).cant++; save(); render(); toast('Agregado ✓'); }
   if (a || e.target.dataset.fc || e.target.id === 'fiBg') $('fiBg').style.display = 'none';
 };
-function renderPl() {
-  const q = norm($('pf')?.value || '');
-  const l = all.filter(p => !q || norm(p.nombre).includes(q)).sort((a, b) => norm(a.nombre).localeCompare(norm(b.nombre)));
-  if ($('pl')) $('pl').innerHTML = l.map(p => `<div class="tr">${thp(p.imagen)}<span class="${p.activo === false ? 'off' : ''}">${esc(p.nombre)}<br><small>${fmt(p.precio)}</small></span><button data-pf="${p.id}">Foto</button><button data-pe="${p.id}">Editar</button><button data-pt="${p.id}">${p.activo === false ? 'Mostrar' : 'Ocultar'}</button></div>`).join('') || '<div class="empty">Sin resultados</div>';
-}
 function renderChips() {
   const used = ['todos', ...Object.keys(CATS).filter(k => products.some(p => p.categoria === k))];
   $('chips').innerHTML = used.map(k => `<button class="chip${k === cat ? ' on' : ''}" data-c="${k}">${k === 'todos' ? 'Todo' : CATS[k]}</button>`).join('');
