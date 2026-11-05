@@ -100,10 +100,11 @@ header .tabs{display:flex;gap:6px;margin-bottom:8px}
 </header>
 <main id="ords" style="display:none"></main>
 <main id="aj" style="display:none"></main>
-<div id="arm"><div class="hd"><h2><span>Armar fresas</span><button class="x" id="acl">✕</button></h2><p id="ainfo"></p>
-<input id="aq" type="search" placeholder="Buscar topping: k, choco, oreo…" autocomplete="off" style="width:100%;font-size:17px;padding:12px 14px;border:2px solid var(--line);border-radius:14px"></div>
+<div id="arm"><div class="hd"><h2><span>Armar producto</span><button class="x" id="acl">✕</button></h2>
+<div class="seg" id="av"></div><div class="chips" id="agt"></div>
+<input id="aq" type="search" placeholder="Buscar…" autocomplete="off" style="width:100%;font-size:17px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-top:6px"></div>
 <div id="ag"></div>
-<div class="ft"><div id="asel" style="font-size:13px;color:var(--mut);margin-bottom:8px;min-height:18px"></div><button class="send" id="aok">Agregar al pedido</button></div></div>
+<div class="ft" id="aft"><div id="asel" style="font-size:13px;color:var(--mut);margin-bottom:8px;min-height:18px"></div><button class="send" id="aok">Agregar al pedido</button></div></div>
 <main id="list"><div class="empty">Cargando menú…</div></main>
 <div id="bar"><button id="open" disabled><span id="cnt">Sin productos</span><span id="sum">MX$0.00</span></button></div>
 
@@ -197,58 +198,94 @@ $('ords').onclick = e => {
   }
 };
 
-let tops = [], sel = [], cfg = { precio: 0, max: 3, base: "Lechera y Hershey's, crema clásica y crema batida" };
+const mk = (n, p, g) => ({ n, p, g });
+const ARM = [
+  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 2 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 })] },
+  { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
+  { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
+  { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
+  { id: 'mini', n: 'Minipancakes', v: [mk('12 pzas', 70, { fruta: 2, cobertura: 3, topping: 2 }), mk('18 pzas', 95, { fruta: 2, cobertura: 3, topping: 2 })] }
+];
+const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings' };
+const GO = ['crema', 'fruta', 'cobertura', 'topping'];
+const SEED = {
+  topping: ['Almendra', 'Arándano', 'Chocoretas', 'Suspiritos', 'Cranky', "M&M's", 'Lunetas de yogur', 'Chispitas de chocolate', 'Nuez', 'Granillo', 'Ajonjolí'],
+  cobertura: ['Mermelada de fresa', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
+  fruta: ['Durazno', 'Uva', 'Fresa', 'Plátano'],
+  crema: ['Clásica', 'Moka', 'Vainilla']
+};
+let tops = [], A = null, V = 0, G = '', S = {};
+const gOf = t => t.grupo || 'topping';
 onSnapshot(collection(db, 'toppings'), snap => {
   tops = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => norm(a.nombre).localeCompare(norm(b.nombre)));
   tops.forEach(t => t._n = norm(t.nombre));
   if (view === 'aj') renderAj();
   if ($('arm').style.display === 'flex') renderArm();
 });
-onSnapshot(doc(db, 'config', 'fresas'), snap => { if (snap.exists()) cfg = { ...cfg, ...snap.data() }; });
-
-function armTotal() { return (Number(cfg.precio) || 0) + sel.reduce((s, id) => s + (Number(tops.find(t => t.id === id)?.extra) || 0), 0); }
+const lim = () => A.v[V].g;
+const gKeys = () => GO.filter(g => lim()[g]);
+const nm = id => tops.find(t => t.id === id)?.nombre;
+function armTotal() { return A.v[V].p + Object.values(S).flat().reduce((x, id) => x + (Number(tops.find(t => t.id === id)?.extra) || 0), 0); }
 function renderArm() {
-  const q = norm($('aq').value).trim();
-  const act = tops.filter(t => t.activo !== false && (!q || t._n.includes(q) || t._n.split(/\s+/).some(w => w.startsWith(q))));
-  $('ag').innerHTML = act.map(t => `<button class="tp${sel.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin toppings. Agrégalos en Ajustes.</div>';
-  $('ainfo').textContent = `Base: ${cfg.base}. Elige ${cfg.max} toppings · ${sel.length} de ${cfg.max}`;
-  $('asel').textContent = sel.map(id => tops.find(t => t.id === id)?.nombre).filter(Boolean).join(' · ');
+  $('arm').querySelector('h2 span').textContent = A ? A.n : 'Armar producto';
+  ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A ? '' : 'none');
+  if (!A) { $('ag').innerHTML = ARM.map(a => `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}">${a.n}<br><small>${a.v.map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join(''); return; }
+  $('av').innerHTML = A.v.map((v, i) => `<button data-v="${i}" class="${i === V ? 'on' : ''}">${v.n} · ${fmt(v.p)}</button>`).join('');
+  $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}/${lim()[g]}</button>`).join('');
+  const q = norm($('aq').value).trim(), cur = S[G] || [];
+  const act = tops.filter(t => gOf(t) === G && t.activo !== false && (!q || t._n.includes(q)));
+  $('ag').innerHTML = act.map(t => `<button class="tp${cur.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin opciones. Cárgalas en Ajustes.</div>';
+  $('asel').textContent = gKeys().flatMap(g => (S[g] || []).map(nm)).filter(Boolean).join(' · ');
   $('aok').textContent = `Agregar · ${fmt(armTotal())}`;
 }
-function openArm() { sel = []; $('aq').value = ''; $('arm').style.display = 'flex'; renderArm(); }
-$('acl').onclick = () => $('arm').style.display = 'none';
+function openArm() { A = null; V = 0; G = ''; S = {}; $('aq').value = ''; $('arm').style.display = 'flex'; renderArm(); }
+$('acl').onclick = () => { if (A && confirm('¿Salir sin agregar?') === false) return; $('arm').style.display = 'none'; };
 $('aq').oninput = renderArm;
+$('av').onclick = e => {
+  const i = e.target.dataset.v; if (i === undefined) return; V = +i;
+  Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, lim()[g]); });
+  if (!lim()[G]) G = gKeys()[0]; renderArm();
+};
+$('agt').onclick = e => { const g = e.target.dataset.g; if (g) { G = g; $('aq').value = ''; renderArm(); } };
 $('ag').onclick = e => {
-  const b = e.target.closest('[data-t]'); if (!b) return; const id = b.dataset.t;
-  if (sel.includes(id)) sel = sel.filter(x => x !== id);
-  else if (sel.length >= cfg.max) { toast(`Máximo ${cfg.max} toppings`); return; }
-  else sel.push(id);
+  const ap = e.target.closest('[data-ap]');
+  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; G = gKeys()[0]; renderArm(); return; }
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  const id = b.dataset.t, cur = S[G] || (S[G] = []);
+  if (cur.includes(id)) S[G] = cur.filter(x => x !== id);
+  else if (cur.length >= lim()[G]) { toast(`Máximo ${lim()[G]}`); return; }
+  else { cur.push(id); if (cur.length >= lim()[G]) { const nx = gKeys().find(g => (S[g] || []).length < lim()[g]); if (nx) { G = nx; $('aq').value = ''; } } }
   renderArm();
 };
 $('aok').onclick = () => {
-  if (!sel.length) { toast('Elige al menos un topping'); return; }
-  if (sel.length < cfg.max && !confirm(`Faltan ${cfg.max - sel.length} toppings. ¿Agregar así?`)) return;
-  const names = sel.map(id => tops.find(t => t.id === id)?.nombre).filter(Boolean);
-  const id = 'arm' + Date.now();
-  cart[id] = { id, nombre: 'Fresas armadas', precio: armTotal(), cant: 1, nota: 'Toppings: ' + names.join(', ') };
-  save(); $('arm').style.display = 'none'; render(); toast('Fresas agregadas ✓');
+  if (!A) return;
+  const falta = gKeys().filter(g => (S[g] || []).length < lim()[g]).map(g => GN[g].toLowerCase());
+  if (falta.length && !confirm('Faltan: ' + falta.join(', ') + '. ¿Agregar así?')) return;
+  const v = A.v[V], id = 'arm' + Date.now();
+  const nota = gKeys().filter(g => (S[g] || []).length).map(g => `${GN[g]}: ${S[g].map(nm).filter(Boolean).join(', ')}`).join(' · ');
+  cart[id] = { id, nombre: `${A.n} · ${v.n}`, precio: armTotal(), cant: 1, nota };
+  save(); $('arm').style.display = 'none'; render(); toast('Agregado ✓');
 };
 
 function renderAj() {
   const f = $('pf')?.value || '';
-  $('aj').innerHTML = `<div class="aj"><h3>Fresas armadas</h3>Precio base (MX$)<input id="cp" type="number" inputmode="decimal" value="${cfg.precio}">Toppings incluidos<input id="cm" type="number" inputmode="numeric" value="${cfg.max}">Base (texto)<input id="cb" value="${esc(cfg.base)}"><button class="b" id="cg">Guardar</button></div>
-  <div class="aj"><h3>Agregar toppings</h3><small>Uno por línea. Con precio extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="5" placeholder="Chocoretas&#10;Crankies&#10;Ferrero, 15"></textarea><button class="b" id="ca">Agregar lista</button></div>
+  $('aj').innerHTML = `<div class="aj"><h3>Opciones de armado</h3><button class="b" id="cs">Cargar lista inicial</button><small>Agrega toppings, coberturas, frutas y cremas que falten.</small></div>
+  <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff"><option value="topping">Toppings</option><option value="cobertura">Coberturas</option><option value="fruta">Frutas</option><option value="crema">Cremas</option></select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
   <div class="aj"><h3>Productos (${all.length})</h3><input id="pf" placeholder="Filtrar por nombre…"><div id="pl"></div></div>
-  <div class="aj"><h3>Toppings (${tops.length})</h3>${tops.map(t => `<div class="tr"><span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}${t.imagen ? ' 🖼' : ''}</span><button data-ti="${t.id}">Foto</button><button data-tt="${t.id}">${t.activo === false ? 'Activar' : 'Ocultar'}</button><button data-td="${t.id}">✕</button></div>`).join('') || '<div class="empty">Aún no hay toppings</div>'}</div>`;
+  <div class="aj"><h3>Opciones (${tops.length})</h3>${tops.map(t => `<div class="tr"><span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)} <small>${GN[gOf(t)]}</small>${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}${t.imagen ? ' 🖼' : ''}</span><button data-ti="${t.id}">Foto</button><button data-tt="${t.id}">${t.activo === false ? 'Activar' : 'Ocultar'}</button><button data-td="${t.id}">✕</button></div>`).join('') || '<div class="empty">Aún no hay toppings</div>'}</div>`;
   $('pf').value = f; renderPl();
 }
 $('aj').oninput = e => { if (e.target.id === 'pf') renderPl(); };
 $('aj').onclick = async e => {
   const t = e.target, id = t.dataset.ti || t.dataset.tt || t.dataset.td;
-  if (t.id === 'cg') { await setDoc(doc(db, 'config', 'fresas'), { precio: parseFloat($('cp').value) || 0, max: parseInt($('cm').value) || 3, base: $('cb').value.trim() }, { merge: true }); toast('Guardado ✓'); }
+  if (t.id === 'cs') {
+    t.disabled = true; let n = 0;
+    for (const g of Object.keys(SEED)) for (const x of SEED[g]) if (!tops.some(o => gOf(o) === g && norm(o.nombre) === norm(x))) { addDoc(collection(db, 'toppings'), { nombre: x, grupo: g, extra: 0, activo: true, imagen: '' }); n++; }
+    toast(n ? `${n} agregadas ✓` : 'Ya estaban todas'); setTimeout(() => t.disabled = false, 1500);
+  }
   if (t.id === 'ca') {
     const lines = $('cl').value.split('\n').map(l => l.trim()).filter(Boolean);
-    lines.forEach(l => { const [n, x] = l.split(','); addDoc(collection(db, 'toppings'), { nombre: n.trim(), extra: parseFloat(x) || 0, activo: true, imagen: '' }); });
+    lines.forEach(l => { const [n, x] = l.split(','); addDoc(collection(db, 'toppings'), { nombre: n.trim(), grupo: $('cgp').value, extra: parseFloat(x) || 0, activo: true, imagen: '' }); });
     $('cl').value = ''; toast(`${lines.length} agregados ✓`);
   }
   if (t.dataset.pt) { const o = all.find(x => x.id === t.dataset.pt); updateDoc(doc(db, 'productos', o.id), { activo: o.activo === false }); }
@@ -305,7 +342,7 @@ function search() {
 
 function render() {
   const r = search();
-  const arm = (!$('q').value.trim() && (cat === 'todos' || cat === 'fresas')) ? '<button class="armb" id="armb">🍓 Armar fresas</button>' : '';
+  const arm = !$('q').value.trim() ? '<button class="armb" id="armb">🍓 Armar producto</button>' : '';
   $('list').innerHTML = arm + (r.length ? r.map(p => `
     <div class="row" data-p="${p.id}"><img src="${esc(img(p.imagen))}" alt="" loading="lazy">
       <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${fmt(p.precio)}</div></div>
