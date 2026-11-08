@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Comandas · Berry Sweet</title>
+<meta name="theme-color" content="#d6336c">
+
 <style>
 :root{--bg:#fff7f9;--card:#fff;--ink:#2b1d22;--mut:#8a747b;--pri:#d6336c;--pri2:#fce4ec;--line:#f1d9e0;--ok:#2f9e44}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -89,7 +91,7 @@ header .tabs{display:flex;gap:6px;margin-bottom:8px}
 #fi .pc{color:var(--pri);font-weight:800;font-size:20px;margin:4px 0 8px}
 #fi p{white-space:pre-line;line-height:1.45;margin:0 0 14px}
 .row .inf,.row img{cursor:pointer}
-#adm{width:100%;height:calc(100dvh - 150px);border:0;border-radius:14px;background:#fff;display:block}
+#adm{width:100%;height:calc(100dvh - 170px);border:0;border-radius:14px;background:var(--bg);display:block}
 .tr span{min-width:0}.tr button{min-width:42px}
 #oc:empty{display:none}
 img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--pri2);flex:none;display:block}
@@ -150,12 +152,48 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 .pmx{width:100%;border:0;background:none;color:var(--mut);padding:10px;font-size:15px;font-weight:600}
 .cr{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #f8eaee;font-size:15px}.cr small{color:var(--mut)}
 .cs{width:100%;margin-top:10px;border:1px solid var(--line);background:#fff;color:var(--pri);border-radius:12px;padding:11px;font-size:15px;font-weight:700}
+.tab{position:relative;white-space:nowrap}
+.tab b{position:absolute;top:-6px;right:-3px;min-width:20px;height:20px;line-height:16px;padding:0 5px;text-align:center;background:var(--pri);color:#fff;border:2px solid #fff;border-radius:10px;font-size:11px}
+.tab b:empty{display:none}.tab.on b{background:#fff;color:var(--pri);border-color:var(--pri)}
+.tr .sw{min-width:54px;width:54px;height:30px;padding:0;border-radius:15px;position:relative;background:#ced4da;transition:background .15s}
+.tr .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:left .15s}
+.tr .sw.on{background:#40c057}.tr .sw.on::after{left:27px}
+.dch{display:flex;gap:6px;flex-wrap:wrap}.dch button{flex:1;min-width:30%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:11px 6px;font-size:15px;font-weight:700}
+.dch button.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.dl{margin:8px 2px 0;color:var(--mut);font-size:14px;text-transform:capitalize}
+#calBg{position:fixed;inset:0;background:#2b1d2299;z-index:30;display:none;align-items:center;justify-content:center;padding:20px}
+#cal{background:#fff;border-radius:20px;padding:16px;width:100%;max-width:340px;box-shadow:0 10px 40px #0004;animation:pop .15s ease-out}
+.cch{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:17px;text-transform:capitalize}
+.cch button{width:42px;height:42px;border:0;border-radius:12px;background:var(--pri2);color:var(--pri);font-size:20px;font-weight:800}.cch button:disabled{opacity:.3}
+.cwd,.cdd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cwd{font-size:12px;color:var(--mut);margin-bottom:4px}
+.cdd button{aspect-ratio:1;border:0;border-radius:50%;background:none;font-size:15px;color:var(--ink)}
+.cdd button.hoy{border:1.5px solid var(--pri)}.cdd button.on{background:var(--pri);color:#fff;font-weight:800}.cdd button:disabled{color:#ccc}
+.oc .li{display:flex;gap:10px;align-items:flex-start;padding:8px 0}
+.oc .li .lth{flex:none}.oc .li .lb{flex:1;min-width:0}
+.oc .li .lr{display:flex;justify-content:space-between;gap:10px;font-size:16px;line-height:1.3}.oc .li .lr .lpz{font-weight:600;white-space:nowrap;color:var(--mut)}
+.oc .li small{display:block;margin-top:3px;font-size:13px;line-height:1.3;padding:3px 8px;border-radius:8px}.oc .li small b{font-weight:800}
+.oc .li .fs{display:flex;gap:4px;margin-top:6px}
+.oc .bt .go{width:100%;flex:1;font-size:17px;padding:15px 8px}
+.oc .bt2{gap:6px}.oc .bt2 button{font-size:13px;padding:10px 2px;white-space:nowrap;border-radius:10px}.oc .bt2 .dg{color:#c92a2a}
+.ofs{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:visible;padding:2px 0 8px}
+.ofs .chip{padding:12px 8px;font-size:15px;text-align:center;border-radius:14px}
+.cci small{display:block;margin-top:3px;font-size:17px;line-height:1.3}.cci small b{font-weight:800}
+.tr{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin-bottom:8px;gap:10px;box-shadow:0 1px 4px #d6336c14}
+.tr span{flex:1}.tr span small{color:var(--mut)}
+.tr button:not(.sw){width:40px;height:40px;min-width:40px;padding:0;border-radius:50%;font-size:15px}
+.tr [data-td]{background:#fff0f0;color:#c92a2a}
+body{overscroll-behavior-y:contain}
+header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.corte summary{font-weight:800;font-size:16px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.corte summary::-webkit-details-marker{display:none}.corte summary small{color:var(--pri);font-weight:600;font-size:14px}
+.corte[open] summary{margin-bottom:6px}.corte[open] summary small{display:none}
 </style>
 </head>
 <body>
 <header>
   <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="coc">Cocina <b id="cc2"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button></div>
-  <div id="mh"><div class="top"><input id="q" type="search" placeholder="Buscar: f, crepa, oreo…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button></div>
+  <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
 <main id="ords" style="display:none"></main>
@@ -190,6 +228,7 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 </div></div>
 <div id="fiBg"><div id="fi"></div></div>
 <div id="dlgBg"><div id="dlg" role="dialog" aria-modal="true"><h3 id="dt"></h3><p id="dm"></p><div class="dbt"><button class="dn" id="dn"></button><button class="dy" id="dy"></button></div></div></div>
+<div id="calBg"><div id="cal"></div></div>
 <div id="payBg"><div id="pay"></div></div>
 <div id="undo"></div>
 <div id="toast"></div>
@@ -242,7 +281,7 @@ function undo(msg, fn) {
   clearTimeout(undo.t); undo.t = setTimeout(() => u.style.display = 'none', 6000);
   b.onclick = () => { clearTimeout(undo.t); u.style.display = 'none'; fn(); toast('Deshecho ✓'); };
 }
-const MP = { efectivo: '💵 Efectivo', tarjeta: '💳 Tarjeta', transferencia: '🏦 Transferencia' };
+const MP = { efectivo: '💵 Efectivo', tarjeta: '💳 Tarjeta' };
 function payAsk(o) {
   return new Promise(res => {
     $('pay').innerHTML = `<h3>Cobrar · ${esc(o.cliente)}</h3><div class="pt">${fmt(o.total)}</div><p>¿Cómo pagó?</p>` +
@@ -273,7 +312,8 @@ onSnapshot(collection(db, 'productos'), snap => {
 const th = (src, c = 'th') => src ? `<img class="${c}" src="${esc(img(src))}" alt="" loading="lazy">` : '';
 const thp = src => src ? th(src) : '<i class="th"></i>';
 const pic = i => i.img ? th(i.img) : (i.fotos?.length ? `<span class="fs">${i.fotos.slice(0, 4).map(f => th(f, 'th2')).join('')}</span>` : '');
-const lines = o => (o.items || []).map(i => `<div class="li"><span style="display:flex;gap:6px;align-items:center">${pic(i)}<span><b class="q">${i.cant}×</b>${esc(i.nombre)}${i.nota ? `<small>${esc(i.nota)}</small>` : ''}</span></span><span>${fmt(i.cant * i.precio)}</span></div>`).join('');
+const notas = n => n ? n.split(' · ').map(p => { const k = p.indexOf(':'); return `<small>${k > 0 ? `<b>${esc(p.slice(0, k + 1))}</b>${esc(p.slice(k + 1))}` : esc(p)}</small>`; }).join('') : '';
+const lines = o => (o.items || []).map(i => `<div class="li">${i.img ? `<div class="lth">${th(i.img)}</div>` : ''}<div class="lb"><div class="lr"><span><b class="q">${i.cant}×</b>${esc(i.nombre)}</span><b class="lpz">${fmt(i.cant * i.precio)}</b></div>${notas(i.nota)}${i.fotos?.length ? pic({ fotos: i.fotos }) : ''}</div></div>`).join('');
 let orders = [], view = 'menu', editId = null;
 const SIG = { pendiente: ['▶ Empezar a preparar', 'preparando'], preparando: ['✓ Marcar entregado', 'entregado'], entregado: ['💲 Cobrar', 'cobrado'] };
 const ST = { pendiente: 'Nuevo', preparando: 'Preparando', entregado: 'Por cobrar' };
@@ -317,7 +357,7 @@ function renderCoc() {
   const l = orders.filter(o => o.estado === 'pendiente' || o.estado === 'preparando');
   const mins = o => o.creadoEn?.seconds ? Math.max(0, Math.round((Date.now() / 1000 - o.creadoEn.seconds) / 60)) : 0;
   $('coc').innerHTML = `<div class="ck"><b>${l.length} por preparar</b><button id="snd" class="${snd ? 'on' : ''}">${snd ? '🔔 Sonido activado' : '🔕 Activar sonido'}</button></div>` +
-    (l.length ? `<div class="cg">${l.map(o => { const m = mins(o); return `<div class="cc ${o.estado}${m >= 20 ? ' late' : m >= 10 ? ' warn' : ''}"><div class="cch"><span>${esc(o.cliente)}</span><span>${m < 1 ? 'ahora' : m + ' min'}</span></div><div class="ccm">${o.tipo === 'llevar' ? '🛍 Para llevar' : '🍽 Aquí'} · ${hora(o)} · ${esc(o.mesero || '')}</div>${(o.items || []).map(i => `<div class="cci"><b>${i.cant}×</b> ${esc(i.nombre)}${i.nota ? `<small>${esc(i.nota)}</small>` : ''}</div>`).join('')}<button class="ccb" data-s="${o.id}">${o.estado === 'pendiente' ? '▶ Empezar' : '✓ Listo'}</button></div>`; }).join('')}</div>` : '<div class="empty">🍓 Todo al día, sin pedidos pendientes</div>');
+    (l.length ? `<div class="cg">${l.map(o => { const m = mins(o); return `<div class="cc ${o.estado}${m >= 20 ? ' late' : m >= 10 ? ' warn' : ''}"><div class="cch"><span>${esc(o.cliente)}</span><span>${m < 1 ? 'ahora' : m + ' min'}</span></div><div class="ccm">${o.tipo === 'llevar' ? '🛍 Para llevar' : '🍽 Aquí'} · ${hora(o)} · ${esc(o.mesero || '')}</div>${(o.items || []).map(i => `<div class="cci"><b>${i.cant}×</b> ${esc(i.nombre)}${notas(i.nota)}</div>`).join('')}<button class="ccb" data-s="${o.id}">${o.estado === 'pendiente' ? '▶ Empezar' : '✓ Listo'}</button></div>`; }).join('')}</div>` : '<div class="empty">🍓 Todo al día, sin pedidos pendientes</div>');
 }
 $('coc').onclick = e => {
   if (e.target.id === 'snd') {
@@ -328,6 +368,12 @@ $('coc').onclick = e => {
   const id = e.target.dataset.s, o = orders.find(x => x.id === id);
   if (o) adv(o);
 };
+const qx = () => { $('clr').style.display = $('q').value ? '' : 'none'; };
+$('q').addEventListener('input', qx); $('clr').addEventListener('click', () => setTimeout(qx));
+qx();
+// limpieza: si algún dispositivo llegó a registrar la versión instalable, se desactiva
+if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(r => r.forEach(x => x.unregister())).catch(() => {});
+if (window.caches) caches.delete('comandas-v1').catch(() => {});
 const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 let hist = [], hDay = ymd(new Date()), hUnsub = null;
 function listenHis() {
@@ -338,6 +384,7 @@ function listenHis() {
     if (view === 'his') renderHis();
   });
 }
+let corteOpen = false;
 function calcCorte() {
   const ok = hist.filter(o => o.estado === 'cobrado'), tot = ok.reduce((x, o) => x + (o.total || 0), 0);
   const by = kf => { const m = {}; ok.forEach(o => { const k = kf(o); (m[k] = m[k] || { n: 0, t: 0 }); m[k].n++; m[k].t += o.total || 0; }); return m; };
@@ -347,25 +394,50 @@ function corteHtml() {
   const c = calcCorte(); if (!c.ok.length) return '';
   const row = (n, v, sm) => `<div class="cr"><span>${n}${sm ? ` <small>${sm}</small>` : ''}</span><b>${fmt(v)}</b></div>`;
   const pm = c.pm;
-  return `<div class="aj"><h3>Corte del día</h3>${row('Total cobrado', c.tot, c.ok.length + ' pedidos')}${row('Ticket promedio', c.tot / c.ok.length)}
+  return `<details class="aj corte"${corteOpen ? ' open' : ''}><summary>📊 Corte del día <small>ver detalle ›</small></summary>${row('Ticket promedio', c.tot / c.ok.length, c.ok.length + ' pedidos')}
     <h3 style="margin-top:12px">Por método de pago</h3>${Object.entries(MP).map(([k, t]) => row(t, pm[k]?.t || 0, (pm[k]?.n || 0) + '')).join('')}${pm.sin ? row('Sin registrar', pm.sin.t, pm.sin.n + '') : ''}
     <h3 style="margin-top:12px">Por mesero</h3>${c.mz.map(([n, v]) => row(esc(n), v.t, v.n + ' pedidos')).join('')}
-    ${c.canc ? `<div class="cr"><span>Cancelados</span><b>${c.canc}</b></div>` : ''}<button class="cs" data-cs="1">📤 Compartir corte</button></div>`;
+    ${c.canc ? `<div class="cr"><span>Cancelados</span><b>${c.canc}</b></div>` : ''}<button class="cs" data-cs="1">📤 Compartir corte</button></details>`;
 }
 function corteTxt() {
   const c = calcCorte(), l = [`🍓 Berry Sweet · Corte ${hDay}`, `Total: ${fmt(c.tot)} (${c.ok.length} pedidos)`, '', 'Método de pago:'];
   Object.entries(MP).forEach(([k, t]) => l.push(`${t}: ${fmt(c.pm[k]?.t || 0)}`)); if (c.pm.sin) l.push(`Sin registrar: ${fmt(c.pm.sin.t)}`);
   l.push('', 'Meseros:'); c.mz.forEach(([n, v]) => l.push(`${n}: ${fmt(v.t)} (${v.n})`)); return l.join('\n');
 }
+$('his').addEventListener('toggle', e => { if (e.target.classList?.contains('corte')) corteOpen = e.target.open; }, true);
 function renderHis() {
   const ok = hist.filter(o => o.estado === 'cobrado'), tot = ok.reduce((x, o) => x + (o.total || 0), 0);
-  $('his').innerHTML = `<div class="aj"><input type="date" id="hd" value="${hDay}" style="width:100%;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:10px;margin:0"><div class="tot" style="margin:10px 0 0"><span>Cobrado (${ok.length})</span><span>${fmt(tot)}</span></div></div>` + corteHtml() +
+  $('his').innerHTML = `<div class="aj">${dateBar()}<div class="tot" style="margin:10px 0 0"><span>Cobrado (${ok.length})</span><span>${fmt(tot)}</span></div></div>` + corteHtml() +
     (hist.length ? hist.map(o => `<div class="oc ${o.estado}"><div class="h"><span>${esc(o.cliente)}</span><span class="tg">${o.estado === 'cancelado' ? 'Cancelado' : (o.tipo === 'llevar' ? 'Para llevar' : 'Aquí')}</span></div>
       <div class="m">${hora(o)} · ${esc(o.mesero || 'sin mesero')}</div>${lines(o)}
       <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div><div class="bt"><button data-r="${o.id}">Reabrir</button></div></div>`).join('') : '<div class="empty">Sin pedidos terminados este día</div>');
 }
-$('his').onchange = e => { if (e.target.id === 'hd' && e.target.value) { hDay = e.target.value; listenHis(); } };
+const dLbl = k => new Date(k + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+function dateBar() {
+  const n = i => ymd(new Date(Date.now() - i * 864e5)), q = [[n(0), 'Hoy'], [n(1), 'Ayer'], [n(2), 'Antes de ayer']];
+  const otra = !q.some(([k]) => k === hDay);
+  return '<div class="dch">' + q.map(([k, t]) => `<button data-d="${k}" class="${k === hDay ? 'on' : ''}">${t}</button>`).join('') +
+    `<button data-cal="1" class="${otra ? 'on' : ''}">📅 ${otra ? new Date(hDay + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : 'Otra fecha'}</button></div><div class="dl">${dLbl(hDay)}</div>`;
+}
+function setDay(k) { hDay = k; hist = []; listenHis(); renderHis(); }
+let cm = null;
+function openCal() { const [y, m] = hDay.split('-').map(Number); cm = new Date(y, m - 1, 1); drawCal(); $('calBg').style.display = 'flex'; }
+function drawCal() {
+  const y = cm.getFullYear(), m = cm.getMonth(), off = (new Date(y, m, 1).getDay() + 6) % 7, nd = new Date(y, m + 1, 0).getDate(), hoy = ymd(new Date());
+  const cells = Array.from({ length: off }, () => '<span></span>').concat(Array.from({ length: nd }, (_, i) => { const k = ymd(new Date(y, m, i + 1)); return `<button data-cd="${k}" class="${k === hDay ? 'on' : ''}${k === hoy ? ' hoy' : ''}"${k > hoy ? ' disabled' : ''}>${i + 1}</button>`; }));
+  const futuro = ymd(new Date(y, m + 1, 1)) > hoy;
+  $('cal').innerHTML = `<div class="cch"><button data-cm="-1" aria-label="Mes anterior">‹</button><b>${cm.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}</b><button data-cm="1" aria-label="Mes siguiente"${futuro ? ' disabled' : ''}>›</button></div>
+    <div class="cwd">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => `<span>${d}</span>`).join('')}</div><div class="cdd">${cells.join('')}</div><button class="pmx" data-cx="1">Cerrar</button>`;
+}
+$('calBg').onclick = e => {
+  const t = e.target;
+  if (t.dataset.cm) { cm = new Date(cm.getFullYear(), cm.getMonth() + Number(t.dataset.cm), 1); drawCal(); }
+  else if (t.dataset.cd) { $('calBg').style.display = 'none'; setDay(t.dataset.cd); }
+  else if (t.dataset.cx || t.id === 'calBg') $('calBg').style.display = 'none';
+};
 $('his').onclick = e => {
+  if (e.target.dataset.d) { setDay(e.target.dataset.d); return; }
+  if (e.target.dataset.cal) { openCal(); return; }
   if (e.target.dataset.cs) { const t = corteTxt(); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return; }
   const r = e.target.dataset.r; if (r) { updateDoc(doc(db, 'comandas', r), { estado: 'entregado', metodoPago: null, cobradoEn: null }); toast('Pedido reabierto'); } };
 function renderOrds() {
@@ -378,8 +450,8 @@ function renderOrds() {
     <div class="m"><span class="pill ${o.estado}">${ST[o.estado]}</span><span>${hora(o)} · ${ago(o)}</span><span>· ${esc(o.mesero || 'sin mesero')}</span></div>
     ${lines(o)}
     <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div>
-    <div class="bt"><button class="go" data-s="${o.id}">${SIG[o.estado][0]}</button><button data-e="${o.id}">Editar</button><button class="no" data-x="${o.id}">Cancelar</button></div>
-    <div class="bt2"><button data-pk="${o.id}" data-a="print">🖨 Imprimir</button><button data-pk="${o.id}" data-a="share">📤 Compartir</button></div></div>`).join('')
+    <div class="bt"><button class="go" data-s="${o.id}">${SIG[o.estado][0]}</button></div>
+    <div class="bt2"><button data-e="${o.id}">✏️ Editar</button><button data-pk="${o.id}" data-a="print">🖨 Imprimir</button><button data-pk="${o.id}" data-a="share">📤 Enviar</button><button class="dg" data-x="${o.id}">✕ Cancelar</button></div></div>`).join('')
     : '<div class="empty">No hay pedidos en esta lista</div>');
 }
 function setView(v) {
@@ -518,10 +590,20 @@ const ADM_CSS = `.adm-top{padding:10px 14px!important}.adm-top h2{font-size:17px
 .adm-row-name{white-space:normal!important;overflow:visible!important;font-size:15px!important;line-height:1.2}
 .adm-row-meta{font-size:12px!important}
 .adm-desc{font-size:12px;color:#6b5b76;line-height:1.3;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.adm-icon{width:30px!important;height:30px!important;font-size:12px!important;align-self:center}
-.adm-switch{width:36px!important;height:21px!important;align-self:center}
-.adm-switch span::after{width:15px!important;height:15px!important;top:3px!important;left:3px!important}
-.adm-switch input:checked + span::after{transform:translateX(15px)!important}`;
+.adm-icon{width:40px!important;height:40px!important;font-size:14px!important;align-self:center;background:#fce4ec!important;color:#d6336c!important}.adm-icon.del{background:#fff0f0!important;color:#c92a2a!important}
+.adm-switch{width:54px!important;height:30px!important;align-self:center}
+.adm-switch span{border-radius:15px!important;background:#ced4da!important}
+.adm-switch span::after{width:24px!important;height:24px!important;top:3px!important;left:3px!important}
+.adm-switch input:checked + span{background:#40c057!important}
+.adm-switch input:checked + span::after{transform:translateX(24px)!important}
+:root{--primary:#d6336c;--secondary:#d6336c;--accent:#d6336c;--light:#fff7f9;--dark:#2b1d22;--text:#2b1d22;--green:#40c057}
+html,body,.adm-overlay{background:#fff7f9!important}
+body,.adm-btn,input,select,textarea{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif!important}
+.adm-top{background:transparent!important;color:#8a747b!important;box-shadow:none!important;padding:2px 4px 8px!important}
+.adm-top h2{font-size:0!important}.adm-top h2 small{display:block;font-size:14px!important;font-weight:600;opacity:1!important}
+.adm-tools input,.adm-tools select,.adm-btn{border:1px solid #f1d9e0!important;border-radius:14px!important}.adm-btn.primary{border-color:transparent!important;background:#d6336c!important}
+.adm-row{border:1px solid #f1d9e0!important;border-radius:16px!important;box-shadow:0 1px 4px #d6336c14!important}
+.adm-modal{border-radius:20px!important}`;
 function decAdm() {
   try {
     const d = $('adm').contentDocument;
@@ -549,7 +631,7 @@ function renderAj() {
   $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar toppings, coberturas, frutas y cremas</button><small>Solo agrega las que falten.</small></div>
   <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff"><option value="topping">Toppings</option><option value="cobertura">Coberturas</option><option value="fruta">Frutas</option><option value="crema">Cremas</option></select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
   <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GO.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
-  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)]}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button data-tt="${t.id}" aria-label="Mostrar u ocultar">${t.activo === false ? '👁' : '🙈'}</button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar toppings, coberturas…".</div>'}</div>`;
+  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)]}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar toppings, coberturas…".</div>'}</div>`;
 }
 $('aj').onclick = async e => {
   const t = e.target, id = t.dataset.ti || t.dataset.tt || t.dataset.td;
