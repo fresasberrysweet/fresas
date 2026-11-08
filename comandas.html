@@ -136,6 +136,9 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 #pay h3{margin:0 0 2px;font-size:19px}#pay .pt{font-size:32px;font-weight:800;color:var(--pri);margin:2px 0 6px}#pay p{margin:0 0 10px;color:var(--mut)}
 .pm{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:15px;font-size:17px;font-weight:700;margin-bottom:8px}
 .pmx{width:100%;border:0;background:none;color:var(--mut);padding:10px;font-size:15px;font-weight:600}
+.test{border-color:#e03131;margin-top:14px}.test h3{color:#e03131;margin:0 0 4px}.test small{display:block;color:var(--mut);margin-bottom:8px}
+.test button{display:block;width:100%;border:1px solid #e03131;background:#fff;color:#e03131;border-radius:12px;padding:13px;font-size:15px;font-weight:700;margin-top:8px}
+.test button.all{background:#e03131;color:#fff}.test button:disabled{opacity:.5}
 #pay input{width:100%;font-size:26px;font-weight:800;padding:12px 14px;border:2px solid var(--line);border-radius:14px;outline:none;text-align:center}
 #pay input:focus{border-color:var(--pri)}
 .qk{display:flex;gap:6px;margin:8px 0}
@@ -233,7 +236,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, getDocs, writeBatch, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCOqdSCerlqBgpMoanrGbzRbtfo1P0VGU4",
@@ -401,7 +404,27 @@ function renderHis() {
   $('his').innerHTML = `<div class="aj">${dateBar()}<div class="tot" style="margin:10px 0 0"><span>Cobrado (${ok.length})</span><span>${fmt(tot)}</span></div></div>` + corteHtml() +
     (hist.length ? hist.map(o => `<div class="oc ${o.estado}"><div class="h"><span>${esc(o.cliente)}</span><span class="tg">${o.estado === 'cancelado' ? 'Cancelado' : (o.tipo === 'llevar' ? 'Para llevar' : 'Aquí')}</span></div>
       <div class="m">${hora(o)} · ${esc(o.mesero || 'sin mesero')}</div>${lines(o)}${o.metodoPago === 'efectivo' && o.recibido != null ? `<div class="m">💵 Recibió ${fmt(o.recibido)} · Cambio ${fmt(o.cambio)}</div>` : ''}
-      <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div><div class="bt"><button data-r="${o.id}">Reabrir</button></div></div>`).join('') : '<div class="empty">Sin pedidos terminados este día</div>');
+      <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div><div class="bt"><button data-r="${o.id}">Reabrir</button></div></div>`).join('') : '<div class="empty">Sin pedidos terminados este día</div>') + testHtml();
+}
+const TEST_MODE = true; // ⚠ poner en false antes de usar la app con clientes reales: oculta los botones de borrado
+const testHtml = () => !TEST_MODE ? '' : `<div class="aj test"><h3>🧪 Zona de pruebas</h3><small>Borra datos de Firebase. No se puede deshacer.</small>
+  <button data-wipe="ped">Borrar pedidos y cortes</button><button class="all" data-wipe="all">Borrar TODA la base de datos</button></div>`;
+const WIPE = { ped: { cols: ['comandas'], t: '¿Borrar todos los pedidos?', m: 'Se eliminan los pedidos activos, el historial y los cortes de todos los días. Productos y opciones se quedan.' },
+  all: { cols: ['comandas', 'productos', 'toppings'], t: '¿Borrar TODA la base de datos?', m: 'Se eliminan pedidos, cortes, productos y opciones de armado (toppings, coberturas, cremas).' } };
+async function wipeDb(k) {
+  const w = WIPE[k]; if (!w || !TEST_MODE) return;
+  if (!(await ask(w.t, w.m + ' No se puede deshacer.', 'Continuar', 'Volver', true))) return;
+  if ((prompt('Para confirmar escribe BORRAR') || '').trim().toUpperCase() !== 'BORRAR') { toast('No se borró nada'); return; }
+  toast('Borrando…');
+  try {
+    let n = 0;
+    for (const c of w.cols) {
+      const snap = await getDocs(collection(db, c));
+      for (let i = 0; i < snap.docs.length; i += 400) { const b = writeBatch(db); snap.docs.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit(); }
+      n += snap.size;
+    }
+    editId = null; toast(`Listo: ${n} registros borrados ✓`);
+  } catch (err) { toast('No se pudo borrar. Revisa la conexión o las reglas de Firebase.'); }
 }
 const dLbl = k => new Date(k + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
 function dateBar() {
@@ -427,6 +450,7 @@ $('calBg').onclick = e => {
   else if (t.dataset.cx || t.id === 'calBg') $('calBg').style.display = 'none';
 };
 $('his').onclick = e => {
+  if (e.target.dataset.wipe) { wipeDb(e.target.dataset.wipe); return; }
   if (e.target.dataset.d) { setDay(e.target.dataset.d); return; }
   if (e.target.dataset.cal) { openCal(); return; }
   if (e.target.dataset.cs) { const t = corteTxt(); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return; }
