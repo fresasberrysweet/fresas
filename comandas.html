@@ -136,6 +136,14 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 #pay h3{margin:0 0 2px;font-size:19px}#pay .pt{font-size:32px;font-weight:800;color:var(--pri);margin:2px 0 6px}#pay p{margin:0 0 10px;color:var(--mut)}
 .pm{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:15px;font-size:17px;font-weight:700;margin-bottom:8px}
 .pmx{width:100%;border:0;background:none;color:var(--mut);padding:10px;font-size:15px;font-weight:600}
+#pay input{width:100%;font-size:26px;font-weight:800;padding:12px 14px;border:2px solid var(--line);border-radius:14px;outline:none;text-align:center}
+#pay input:focus{border-color:var(--pri)}
+.qk{display:flex;gap:6px;margin:8px 0}
+.qk button{flex:1;border:1px solid var(--line);background:var(--pri2);color:var(--pri);border-radius:12px;padding:11px 2px;font-size:15px;font-weight:700}
+.chg{text-align:center;font-size:24px;font-weight:800;margin:6px 0 12px;color:var(--mut)}
+.chg.ok{color:var(--ok)}.chg.no{color:#e03131;font-size:18px}
+.pm.go{text-align:center;background:var(--ok);border-color:var(--ok);color:#fff}
+.pm.go:disabled{background:#b8c9bc;border-color:#b8c9bc}
 .cr{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #f8eaee;font-size:15px}.cr small{color:var(--mut)}
 .cs{width:100%;margin-top:10px;border:1px solid var(--line);background:#fff;color:var(--pri);border-radius:12px;padding:11px;font-size:15px;font-weight:700}
 .tab{position:relative;white-space:nowrap}
@@ -274,18 +282,53 @@ function undo(msg, fn) {
 const MP = { efectivo: '💵 Efectivo', tarjeta: '💳 Tarjeta' };
 function payAsk(o) {
   return new Promise(res => {
-    $('pay').innerHTML = `<h3>Cobrar · ${esc(o.cliente)}</h3><div class="pt">${fmt(o.total)}</div><p>¿Cómo pagó?</p>` +
-      Object.entries(MP).map(([k, t]) => `<button class="pm" data-m="${k}">${t}</button>`).join('') + '<button class="pmx" data-m="">Cancelar</button>';
-    $('payBg').style.display = 'flex';
-    $('payBg').onclick = e => { const m = e.target.dataset.m; if (m === undefined && e.target.id !== 'payBg') return; $('payBg').style.display = 'none'; res(m || null); };
+    const bg = $('payBg'), box = $('pay'), total = Number(o.total) || 0, cents = n => Math.round(Number(n) * 100);
+    const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
+    const step1 = () => {
+      box.innerHTML = `<h3>Cobrar · ${esc(o.cliente)}</h3><div class="pt">${fmt(total)}</div><p>¿Cómo pagó?</p>` +
+        Object.entries(MP).map(([k, t]) => `<button class="pm" data-m="${k}">${t}</button>`).join('') + '<button class="pmx" data-m="">Cancelar</button>';
+      bg.style.display = 'flex';
+      bg.onclick = e => {
+        const m = e.target.dataset.m;
+        if (m === undefined) { if (e.target.id === 'payBg') close(null); return; }
+        if (m === 'efectivo') return step2();
+        close(m ? { m } : null);
+      };
+    };
+    const step2 = () => {
+      const quick = [20, 50, 100, 200, 500, 1000].filter(d => cents(d) > cents(total)).slice(0, 3);
+      box.innerHTML = `<h3>💵 Efectivo · ${esc(o.cliente)}</h3><div class="pt">${fmt(total)}</div><p>¿Con cuánto paga?</p>` +
+        `<input id="rec" type="number" inputmode="decimal" min="0" step="any" placeholder="Recibí MX$" autocomplete="off">` +
+        `<div class="qk"><button data-q="${total}">Exacto</button>${quick.map(d => `<button data-q="${d}">$${d}</button>`).join('')}</div>` +
+        `<div class="chg" id="chg">Cambio: —</div><button class="pm go" id="pok" data-ok="1" disabled>Confirmar cobro</button><button class="pmx" data-back="1">← Volver</button>`;
+      const inp = $('rec'), chg = $('chg'), ok = $('pok');
+      const upd = () => {
+        const v = inp.value;
+        if (v === '' || isNaN(Number(v))) { chg.className = 'chg'; chg.textContent = 'Cambio: —'; ok.disabled = true; return; }
+        const d = cents(v) - cents(total);
+        if (d < 0) { chg.className = 'chg no'; chg.textContent = `Faltan ${fmt(-d / 100)}`; ok.disabled = true; }
+        else { chg.className = 'chg ok'; chg.textContent = `Cambio: ${fmt(d / 100)}`; ok.disabled = false; }
+      };
+      inp.oninput = upd;
+      bg.onclick = e => {
+        const d = e.target.dataset;
+        if (d.q !== undefined) { inp.value = d.q; upd(); return; }
+        if (d.back) return step1();
+        if (d.ok) { const r = Number(inp.value); if (inp.value !== '' && cents(r) >= cents(total)) close({ m: 'efectivo', recibido: r, cambio: (cents(r) - cents(total)) / 100 }); return; }
+        if (e.target.id === 'payBg') close(null);
+      };
+      inp.focus();
+    };
+    step1();
   });
 }
 async function adv(o) {
   const prev = o.estado, nx = SIG[prev][1], ref = doc(db, 'comandas', o.id);
   if (nx === 'cobrado') {
-    const m = await payAsk(o); if (!m) return;
-    updateDoc(ref, { estado: 'cobrado', metodoPago: m, cobradoEn: serverTimestamp() });
-    undo(`${o.cliente}: cobrado · ${MP[m]}`, () => updateDoc(ref, { estado: prev, metodoPago: null, cobradoEn: null }));
+    const p = await payAsk(o); if (!p) return;
+    const efe = p.m === 'efectivo';
+    updateDoc(ref, { estado: 'cobrado', metodoPago: p.m, cobradoEn: serverTimestamp(), recibido: efe ? p.recibido : null, cambio: efe ? p.cambio : null });
+    undo(`${o.cliente}: cobrado · ${MP[p.m]}${efe && p.cambio > 0 ? ' · cambio ' + fmt(p.cambio) : ''}`, () => updateDoc(ref, { estado: prev, metodoPago: null, cobradoEn: null, recibido: null, cambio: null }));
     return;
   }
   updateDoc(ref, { estado: nx });
@@ -357,7 +400,7 @@ function renderHis() {
   const ok = hist.filter(o => o.estado === 'cobrado'), tot = ok.reduce((x, o) => x + (o.total || 0), 0);
   $('his').innerHTML = `<div class="aj">${dateBar()}<div class="tot" style="margin:10px 0 0"><span>Cobrado (${ok.length})</span><span>${fmt(tot)}</span></div></div>` + corteHtml() +
     (hist.length ? hist.map(o => `<div class="oc ${o.estado}"><div class="h"><span>${esc(o.cliente)}</span><span class="tg">${o.estado === 'cancelado' ? 'Cancelado' : (o.tipo === 'llevar' ? 'Para llevar' : 'Aquí')}</span></div>
-      <div class="m">${hora(o)} · ${esc(o.mesero || 'sin mesero')}</div>${lines(o)}
+      <div class="m">${hora(o)} · ${esc(o.mesero || 'sin mesero')}</div>${lines(o)}${o.metodoPago === 'efectivo' && o.recibido != null ? `<div class="m">💵 Recibió ${fmt(o.recibido)} · Cambio ${fmt(o.cambio)}</div>` : ''}
       <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div><div class="bt"><button data-r="${o.id}">Reabrir</button></div></div>`).join('') : '<div class="empty">Sin pedidos terminados este día</div>');
 }
 const dLbl = k => new Date(k + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -387,7 +430,7 @@ $('his').onclick = e => {
   if (e.target.dataset.d) { setDay(e.target.dataset.d); return; }
   if (e.target.dataset.cal) { openCal(); return; }
   if (e.target.dataset.cs) { const t = corteTxt(); if (navigator.share) navigator.share({ text: t }).catch(() => {}); else window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); return; }
-  const r = e.target.dataset.r; if (r) { updateDoc(doc(db, 'comandas', r), { estado: 'entregado', metodoPago: null, cobradoEn: null }); toast('Pedido reabierto'); } };
+  const r = e.target.dataset.r; if (r) { updateDoc(doc(db, 'comandas', r), { estado: 'entregado', metodoPago: null, cobradoEn: null, recibido: null, cambio: null }); toast('Pedido reabierto'); } };
 function renderOrds() {
   const n = k => orders.filter(o => o.estado === k).length;
   const chips = [['todos', 'Todos', orders.length], ['pendiente', 'Nuevos', n('pendiente')], ['preparando', 'Preparando', n('preparando')], ['entregado', 'Por cobrar', n('entregado')]]
@@ -429,7 +472,7 @@ $('ords').onclick = async e => {
 
 const mk = (n, p, g) => ({ n, p, g });
 const ARM = [
-  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', null, { crema: 1, cobertura: 2, topping: 3 })] },
+  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', 120, { crema: 1, cobertura: 2, topping: 3 })] },
   { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
