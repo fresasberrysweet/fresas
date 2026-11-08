@@ -118,20 +118,6 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 #dlg h3{margin:0 0 6px;font-size:19px}#dlg p{margin:0 0 18px;color:var(--mut);font-size:15px;line-height:1.4}
 #dlg .dbt{display:flex;gap:8px}#dlg .dbt button{flex:1;border:0;border-radius:12px;padding:14px 8px;font-size:16px;font-weight:700}
 #dlg .dn{background:var(--pri2);color:var(--pri)}#dlg .dy{background:var(--pri);color:#fff}#dlg .dy.danger{background:#e03131}
-#coc{max-width:1100px}
-.ck{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:18px}
-.ck button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:9px 14px;font-size:14px;font-weight:700;color:var(--mut)}
-.ck button.on{background:#d3f9d8;border-color:#69db7c;color:#2b8a3e}
-.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.cc{background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
-.cc.pendiente{border-color:#ffc078;background:#fff9f0}.cc.preparando{border-color:#74c0fc;background:#f3faff}
-.cc.warn{box-shadow:0 0 0 3px #ffd43b88}.cc.late{box-shadow:0 0 0 3px #ff6b6b88}
-.cch{display:flex;justify-content:space-between;font-size:24px;font-weight:800}.cc.late .cch span:last-child{color:#e03131}
-.ccm{font-size:13px;color:var(--mut);margin-bottom:4px}
-.cci{font-size:20px;line-height:1.25;padding:6px 0;border-top:1px solid #f1e3e7}.cci b{color:var(--pri)}
-.cci small{display:block;font-size:15px;color:#d9480f;font-weight:600}
-.ccb{margin-top:8px;border:0;border-radius:14px;padding:16px;font-size:19px;font-weight:800;background:var(--pri);color:#fff}
-.cc.preparando .ccb{background:var(--ok)}
 #mesas{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
 #mesas button{position:relative;padding:10px 0;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:15px;font-weight:700;color:var(--ink)}
 #mesas button.on{background:var(--pri);border-color:var(--pri);color:#fff}
@@ -178,7 +164,6 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 .oc .bt2{gap:6px}.oc .bt2 button{font-size:13px;padding:10px 2px;white-space:nowrap;border-radius:10px}.oc .bt2 .dg{color:#c92a2a}
 .ofs{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow:visible;padding:2px 0 8px}
 .ofs .chip{padding:12px 8px;font-size:15px;text-align:center;border-radius:14px}
-.cci small{display:block;margin-top:3px;font-size:17px;line-height:1.3}.cci small b{font-weight:800}
 .tr{background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin-bottom:8px;gap:10px;box-shadow:0 1px 4px #d6336c14}
 .tr span{flex:1}.tr span small{color:var(--mut)}
 .tr button:not(.sw){width:40px;height:40px;min-width:40px;padding:0;border-radius:50%;font-size:15px}
@@ -188,11 +173,17 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .corte summary{font-weight:800;font-size:16px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
 .corte summary::-webkit-details-marker{display:none}.corte summary small{color:var(--pri);font-weight:600;font-size:14px}
 .corte[open] summary{margin-bottom:6px}.corte[open] summary small{display:none}
+.szh{grid-column:1/-1;font-size:15px;font-weight:800;color:var(--pri);margin:2px 0 0}
+.armb.size{margin:0;display:flex;flex-direction:column;gap:3px;padding:18px 12px;border-style:solid;grid-column:1/-1}
+.armb.size b{font-size:21px}.armb.size span{font-size:24px;font-weight:800}.armb.size small{font-size:13px;color:var(--mut);font-weight:500}
+.armb.size.on{background:var(--pri);border-color:var(--pri);color:#fff}.armb.size.on small{color:#fff}.armb.size:disabled{opacity:.45}
+.szs{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;font-size:16px;background:var(--pri2);border-radius:14px;padding:8px 8px 8px 14px}
+.szs button{border:1px solid var(--pri);background:#fff;color:var(--pri);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
 </style>
 </head>
 <body>
 <header>
-  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="coc">Cocina <b id="cc2"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button></div>
+  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button></div>
   <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
@@ -203,7 +194,6 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
   <div id="ajo" style="display:none"></div>
 </main>
 <main id="his" style="display:none"></main>
-<main id="coc" style="display:none"></main>
 <div id="arm"><div class="hd"><h2><span>Armar producto</span><button class="x" id="acl">✕</button></h2>
 <div class="seg" id="av"></div><div class="chips" id="agt"></div>
 <input id="aq" type="search" placeholder="Buscar…" autocomplete="off" style="width:100%;font-size:17px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-top:6px"></div>
@@ -319,55 +309,13 @@ const SIG = { pendiente: ['▶ Empezar a preparar', 'preparando'], preparando: [
 const ST = { pendiente: 'Nuevo', preparando: 'Preparando', entregado: 'Por cobrar' };
 let oSt = 'todos';
 const ago = o => { const t = o.creadoEn?.seconds; if (!t) return 'ahora'; const m = Math.max(0, Math.round((Date.now() / 1000 - t) / 60)); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : `hace ${Math.floor(m / 60)} h ${m % 60} min`; };
-setInterval(() => { if (view === 'ords') renderOrds(); else if (view === 'coc') renderCoc(); }, 30000);
+setInterval(() => { if (view === 'ords') renderOrds(); }, 30000);
 const hora = o => o.creadoEn?.toDate ? o.creadoEn.toDate().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '';
 onSnapshot(query(collection(db, 'comandas'), where('estado', 'in', ['pendiente', 'preparando', 'entregado'])), snap => {
   orders = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.creadoEn?.seconds ?? 9e9) - (b.creadoEn?.seconds ?? 9e9));
   $('oc').textContent = orders.length || '';
-  const nuevos = new Set(orders.filter(o => o.estado === 'pendiente').map(o => o.id));
-  if (seen && [...nuevos].some(id => !seen.has(id))) beep();
-  seen = nuevos;
-  $('cc2').textContent = orders.filter(o => o.estado === 'pendiente' || o.estado === 'preparando').length || '';
-  if (view === 'ords') renderOrds(); else if (view === 'coc') renderCoc();
+  if (view === 'ords') renderOrds();
 });
-let snd = localStorage.getItem('cocSnd') === '1', ac = null, seen = null, wl = null;
-const AC = window.AudioContext || window.webkitAudioContext;
-function beep() {
-  if (!snd) return;
-  try {
-    ac = ac || new AC(); ac.resume();
-    [0, .25, .5].forEach((t, i) => {
-      const o = ac.createOscillator(), g = ac.createGain(), s0 = ac.currentTime + t;
-      o.frequency.value = i === 1 ? 660 : 880; o.connect(g); g.connect(ac.destination);
-      g.gain.setValueAtTime(.0001, s0); g.gain.exponentialRampToValueAtTime(.4, s0 + .02); g.gain.exponentialRampToValueAtTime(.0001, s0 + .2);
-      o.start(s0); o.stop(s0 + .22);
-    });
-    navigator.vibrate?.([200, 100, 200]);
-  } catch (e) {}
-}
-document.addEventListener('pointerdown', () => { if (snd && AC) { try { ac = ac || new AC(); ac.resume(); } catch (e) {} } }, { passive: true });
-async function keepAwake() {
-  try {
-    if (view === 'coc' && !wl && navigator.wakeLock) { wl = await navigator.wakeLock.request('screen'); wl.onrelease = () => wl = null; }
-    else if (view !== 'coc' && wl) { wl.release(); wl = null; }
-  } catch (e) {}
-}
-document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
-function renderCoc() {
-  const l = orders.filter(o => o.estado === 'pendiente' || o.estado === 'preparando');
-  const mins = o => o.creadoEn?.seconds ? Math.max(0, Math.round((Date.now() / 1000 - o.creadoEn.seconds) / 60)) : 0;
-  $('coc').innerHTML = `<div class="ck"><b>${l.length} por preparar</b><button id="snd" class="${snd ? 'on' : ''}">${snd ? '🔔 Sonido activado' : '🔕 Activar sonido'}</button></div>` +
-    (l.length ? `<div class="cg">${l.map(o => { const m = mins(o); return `<div class="cc ${o.estado}${m >= 20 ? ' late' : m >= 10 ? ' warn' : ''}"><div class="cch"><span>${esc(o.cliente)}</span><span>${m < 1 ? 'ahora' : m + ' min'}</span></div><div class="ccm">${o.tipo === 'llevar' ? '🛍 Para llevar' : '🍽 Aquí'} · ${hora(o)} · ${esc(o.mesero || '')}</div>${(o.items || []).map(i => `<div class="cci"><b>${i.cant}×</b> ${esc(i.nombre)}${notas(i.nota)}</div>`).join('')}<button class="ccb" data-s="${o.id}">${o.estado === 'pendiente' ? '▶ Empezar' : '✓ Listo'}</button></div>`; }).join('')}</div>` : '<div class="empty">🍓 Todo al día, sin pedidos pendientes</div>');
-}
-$('coc').onclick = e => {
-  if (e.target.id === 'snd') {
-    snd = !snd; try { localStorage.setItem('cocSnd', snd ? '1' : '0'); } catch (x) {}
-    if (snd) { try { ac = ac || new AC(); ac.resume(); } catch (x) {} beep(); }
-    renderCoc(); return;
-  }
-  const id = e.target.dataset.s, o = orders.find(x => x.id === id);
-  if (o) adv(o);
-};
 const qx = () => { $('clr').style.display = $('q').value ? '' : 'none'; };
 $('q').addEventListener('input', qx); $('clr').addEventListener('click', () => setTimeout(qx));
 qx();
@@ -459,9 +407,8 @@ function setView(v) {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('mh').style.display = $('list').style.display = $('bar').style.display = v === 'menu' ? '' : 'none';
   $('aj').style.display = v === 'aj' ? '' : 'none'; $('his').style.display = v === 'his' ? '' : 'none';
-  $('ords').style.display = v === 'ords' ? '' : 'none'; $('coc').style.display = v === 'coc' ? '' : 'none';
-  keepAwake();
-  if (v === 'coc') renderCoc(); else if (v === 'ords') renderOrds(); else if (v === 'aj') { if (!$('adm').getAttribute('src')) $('adm').src = ADMIN_URL; renderAj(); } else if (v === 'his') { listenHis(); renderHis(); } else render();
+  $('ords').style.display = v === 'ords' ? '' : 'none'; 
+  if (v === 'ords') renderOrds(); else if (v === 'aj') { if (!$('adm').getAttribute('src')) $('adm').src = ADMIN_URL; renderAj(); } else if (v === 'his') { listenHis(); renderHis(); } else render();
 }
 document.querySelector('.tabs').onclick = e => { if (e.target.closest('[data-v]')) setView(e.target.closest('[data-v]').dataset.v); };
 $('ords').onclick = async e => {
@@ -482,7 +429,7 @@ $('ords').onclick = async e => {
 
 const mk = (n, p, g) => ({ n, p, g });
 const ARM = [
-  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 2 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 })] },
+  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', null, { crema: 1, cobertura: 2, topping: 3 })] },
   { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
@@ -496,7 +443,7 @@ const SEED = {
   fruta: ['Durazno', 'Uva', 'Fresa', 'Plátano'],
   crema: ['Clásica', 'Moka', 'Vainilla']
 };
-let tops = [], A = null, V = 0, G = '', S = {}, EK = null;
+let tops = [], A = null, V = 0, G = '', S = {}, EK = null, SZ = false, SZD = false;
 const gOf = t => t.grupo || 'topping';
 onSnapshot(collection(db, 'toppings'), snap => {
   tops = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => norm(a.nombre).localeCompare(norm(b.nombre)));
@@ -510,9 +457,13 @@ const nm = id => tops.find(t => t.id === id)?.nombre;
 function armTotal() { return A.v[V].p + Object.values(S).flat().reduce((x, id) => x + (Number(tops.find(t => t.id === id)?.extra) || 0), 0); }
 function renderArm() {
   $('arm').querySelector('h2 span').textContent = A ? A.n : 'Armar producto';
-  ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A ? '' : 'none');
-  if (!A) { $('ag').innerHTML = ARM.map(a => `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}">${a.n}<br><small>${a.v.map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join(''); return; }
-  $('av').innerHTML = A.v.map((v, i) => `<button data-v="${i}" class="${i === V ? 'on' : ''}">${v.n} · ${fmt(v.p)}</button>`).join('');
+  ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A && !SZ ? '' : 'none');
+  if (!A) { $('ag').innerHTML = ARM.map(a => `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}">${a.n}<br><small>${a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join(''); return; }
+  if (SZ) {
+    $('ag').innerHTML = '<div class="szh">Paso 1 · Elige el tamaño</div>' + A.v.map((v, i) => `<button class="armb size${SZD && i === V ? ' on' : ''}" data-sz="${i}"${v.p == null ? ' disabled' : ''}><b>${v.n}</b><span>${v.p == null ? 'Precio por definir' : fmt(v.p)}</span><small>${GO.filter(g => v.g[g]).map(g => v.g[g] + ' ' + GN[g].toLowerCase()).join(' · ')}</small></button>`).join('');
+    return;
+  }
+  $('av').innerHTML = `<div class="szs"><span>Tamaño: <b>${A.v[V].n}</b> · ${fmt(A.v[V].p)}</span><button data-szc="1">Cambiar</button></div>`;
   $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}/${lim()[g]}</button>`).join('');
   const q = norm($('aq').value).trim(), cur = S[G] || [];
   const act = tops.filter(t => gOf(t) === G && t.activo !== false && (!q || t._n.includes(q)));
@@ -520,10 +471,10 @@ function renderArm() {
   $('asel').textContent = gKeys().flatMap(g => (S[g] || []).map(nm)).filter(Boolean).join(' · ');
   $('aok').textContent = `Agregar · ${fmt(armTotal())}`;
 }
-function openArm() { A = null; V = 0; G = ''; S = {}; $('aq').value = ''; $('arm').style.display = 'flex'; renderArm(); }
+function openArm() { A = null; SZ = false; V = 0; G = ''; S = {}; $('aq').value = ''; $('arm').style.display = 'flex'; renderArm(); }
 function editArm(key) {
   const it = cart[key], a = ARM.find(x => x.id === it?.arm?.a); if (!a) return;
-  A = a; V = it.arm.v || 0; S = JSON.parse(JSON.stringify(it.arm.s || {}));
+  A = a; V = it.arm.v || 0; SZ = false; SZD = true; S = JSON.parse(JSON.stringify(it.arm.s || {}));
   Object.keys(S).forEach(g => S[g] = S[g].filter(id => tops.some(t => t.id === id)));
   EK = key; G = gKeys()[0]; $('aq').value = ''; $('sheetBg').style.display = 'none'; $('arm').style.display = 'flex'; renderArm();
 }
@@ -533,15 +484,17 @@ $('acl').onclick = async () => {
   if (EK) { EK = null; $('sheetBg').style.display = 'block'; sheet(); }
 };
 $('aq').oninput = renderArm;
-$('av').onclick = e => {
-  const i = e.target.dataset.v; if (i === undefined) return; V = +i;
-  Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, lim()[g]); });
-  if (!lim()[G]) G = gKeys()[0]; renderArm();
-};
+$('av').onclick = e => { if (e.target.dataset.szc) { SZ = true; renderArm(); } };
 $('agt').onclick = e => { const g = e.target.dataset.g; if (g) { G = g; $('aq').value = ''; renderArm(); } };
 $('ag').onclick = e => {
+  const sz = e.target.closest('[data-sz]');
+  if (sz) {
+    V = +sz.dataset.sz; SZ = false; SZD = true;
+    Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, lim()[g]); });
+    if (!gKeys().includes(G)) G = gKeys()[0]; renderArm(); return;
+  }
   const ap = e.target.closest('[data-ap]');
-  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; G = gKeys()[0]; renderArm(); return; }
+  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; SZ = true; SZD = false; G = gKeys()[0]; renderArm(); return; }
   const b = e.target.closest('[data-t]'); if (!b) return;
   const id = b.dataset.t, cur = S[G] || (S[G] = []);
   if (cur.includes(id)) S[G] = cur.filter(x => x !== id);
