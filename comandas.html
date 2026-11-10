@@ -504,21 +504,28 @@ $('ords').onclick = async e => {
 
 // Precios estándar de TODAS las vasos de fresas (armadas y especiales: Oreo, mazapán, Ferrero…)
 const PRECIO_FRESA = { '12 oz': 85, '16 oz': 95, '24 oz': 125 };
-const mk = (n, p, g) => ({ n, p, g });
+const UNL = 99; // límite "sin tope": se pueden elegir todas las que quieran
+const mk = (n, p, g, d) => ({ n, p, g, d });
 const ARM = [
   { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', PRECIO_FRESA['12 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', PRECIO_FRESA['16 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', PRECIO_FRESA['24 oz'], { crema: 1, cobertura: 2, topping: 3 })] },
   { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
-  { id: 'mini', n: 'Minipancakes', v: [mk('12 pzas', 70, { fruta: 2, cobertura: 3, topping: 2 }), mk('18 pzas', 95, { fruta: 2, cobertura: 3, topping: 2 })] }
+  { id: 'mini', n: 'Minipancakes', v: [mk('12 pzas', 70, { fruta: 2, cobertura: 3, topping: 2 }), mk('18 pzas', 95, { fruta: 2, cobertura: 3, topping: 2 })] },
+  { id: 'maruchan', n: 'Maruchan preparada', t: 'tipo', v: [mk('Normal', 25, {}, 'Con limón y salsa Valentina'), mk('Con Cheetos', 75, { bolsa: 1, topsal: UNL }, 'Con queso amarillo, limón y salsa Valentina')] },
+  { id: 'snack', n: 'Vaso snack', v: [mk('Único', 70, { bolsa: 2, topsal: UNL, cobsal: UNL }, 'Toppings y coberturas a elección')] }
 ];
-const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings' };
-const GO = ['crema', 'fruta', 'cobertura', 'topping'];
+const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings', bolsa: 'Bolsitas', topsal: 'Toppings salados', cobsal: 'Coberturas saladas' };
+const GO = ['crema', 'fruta', 'cobertura', 'topping', 'bolsa', 'topsal', 'cobsal'];
+const limTxt = (g, n) => n >= UNL ? `${GN[g]} a elección` : g === 'bolsa' ? `${n} ${n > 1 ? 'bolsitas' : 'bolsita'}` : `${n} ${GN[g].toLowerCase()}`;
 const SEED = {
   topping: ['Almendra', 'Arándano', 'Chocoretas', 'Suspiritos', 'Cranky', "M&M's", 'Lunetas de yogur', 'Chispitas de chocolate', 'Nuez', 'Granillo', 'Ajonjolí'],
   cobertura: ['Mermelada de fresa', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
   fruta: ['Durazno', 'Uva', 'Fresa', 'Plátano'],
-  crema: ['Clásica', 'Moka', 'Vainilla']
+  crema: ['Clásica', 'Moka', 'Vainilla'],
+  bolsa: ['Doritos', 'Rancheritos', "Cheetos Flamin' Hot", 'Cheetos naranja', 'Sabritas'],
+  topsal: ['Gomitas de durazno', 'Gomitas de lombriz', 'Picafresas', 'Pulparindo', 'Cacahuate japonés', 'Cacahuate enchilado'],
+  cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina']
 };
 let tops = [], A = null, V = 0, G = '', S = {}, EK = null, SZ = false, SZD = false;
 const gOf = t => t.grupo || 'topping';
@@ -537,11 +544,13 @@ function renderArm() {
   ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A && !SZ ? '' : 'none');
   if (!A) { $('ag').innerHTML = ARM.map(a => `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}">${a.n}<br><small>${a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join(''); return; }
   if (SZ) {
-    $('ag').innerHTML = '<div class="szh">Paso 1 · Elige el tamaño</div>' + A.v.map((v, i) => `<button class="armb size${SZD && i === V ? ' on' : ''}" data-sz="${i}"${v.p == null ? ' disabled' : ''}><b>${v.n}</b><span>${v.p == null ? 'Precio por definir' : fmt(v.p)}</span><small>${GO.filter(g => v.g[g]).map(g => v.g[g] + ' ' + GN[g].toLowerCase()).join(' · ')}</small></button>`).join('');
+    $('ag').innerHTML = `<div class="szh">Paso 1 · Elige el ${A.t || 'tamaño'}</div>` + A.v.map((v, i) => `<button class="armb size${SZD && i === V ? ' on' : ''}" data-sz="${i}"${v.p == null ? ' disabled' : ''}><b>${v.n}</b><span>${v.p == null ? 'Precio por definir' : fmt(v.p)}</span><small>${v.d ? esc(v.d) + (GO.some(g => v.g[g]) ? ' · ' : '') : ''}${GO.filter(g => v.g[g]).map(g => limTxt(g, v.g[g])).join(' · ')}</small></button>`).join('');
     return;
   }
-  $('av').innerHTML = `<div class="szs"><span>Tamaño: <b>${A.v[V].n}</b> · ${fmt(A.v[V].p)}</span><button data-szc="1">Cambiar</button></div>`;
-  $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}/${lim()[g]}</button>`).join('');
+  $('av').innerHTML = A.v.length > 1
+    ? `<div class="szs"><span>${A.t === 'tipo' ? 'Tipo' : 'Tamaño'}: <b>${A.v[V].n}</b> · ${fmt(A.v[V].p)}</span><button data-szc="1">Cambiar</button></div>`
+    : `<div class="szs"><span><b>${esc(A.n)}</b> · ${fmt(A.v[V].p)}</span></div>`;
+  $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}${lim()[g] >= UNL ? '' : '/' + lim()[g]}</button>`).join('');
   const q = norm($('aq').value).trim(), cur = S[G] || [];
   const act = tops.filter(t => gOf(t) === G && t.activo !== false && (!q || t._n.includes(q)));
   $('ag').innerHTML = act.map(t => `<button class="tp${cur.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin opciones. Cárgalas en Ajustes.</div>';
@@ -553,7 +562,7 @@ function editArm(key) {
   const it = cart[key], a = ARM.find(x => x.id === it?.arm?.a); if (!a) return;
   A = a; V = it.arm.v || 0; SZ = false; SZD = true; S = JSON.parse(JSON.stringify(it.arm.s || {}));
   Object.keys(S).forEach(g => S[g] = S[g].filter(id => tops.some(t => t.id === id)));
-  EK = key; G = gKeys()[0]; $('aq').value = ''; $('sheetBg').style.display = 'none'; $('arm').style.display = 'flex'; renderArm();
+  EK = key; G = gKeys()[0]; if (!gKeys().length) SZ = true; $('aq').value = ''; $('sheetBg').style.display = 'none'; $('arm').style.display = 'flex'; renderArm();
 }
 $('acl').onclick = async () => {
   if (A && !EK && !(await ask('¿Salir sin agregar?', 'Se perderá lo que elegiste.', 'Salir', 'Seguir armando', true))) return;
@@ -568,10 +577,10 @@ $('ag').onclick = e => {
   if (sz) {
     V = +sz.dataset.sz; SZ = false; SZD = true;
     Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, lim()[g]); });
-    if (!gKeys().includes(G)) G = gKeys()[0]; renderArm(); return;
+    if (!gKeys().includes(G)) G = gKeys()[0]; if (!gKeys().length) { $('aok').onclick(); return; } renderArm(); return;
   }
   const ap = e.target.closest('[data-ap]');
-  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; SZ = true; SZD = false; G = gKeys()[0]; renderArm(); return; }
+  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; SZ = A.v.length > 1; SZD = !SZ; G = gKeys()[0]; if (!SZ && !gKeys().length) { $('aok').onclick(); return; } renderArm(); return; }
   const b = e.target.closest('[data-t]'); if (!b) return;
   const id = b.dataset.t, cur = S[G] || (S[G] = []);
   if (cur.includes(id)) S[G] = cur.filter(x => x !== id);
@@ -581,12 +590,12 @@ $('ag').onclick = e => {
 };
 $('aok').onclick = async () => {
   if (!A) return;
-  const falta = gKeys().filter(g => (S[g] || []).length < lim()[g]).map(g => GN[g].toLowerCase());
+  const falta = gKeys().filter(g => lim()[g] < UNL && (S[g] || []).length < lim()[g]).map(g => GN[g].toLowerCase());
   if (falta.length && !(await ask('Faltan opciones', 'Aún no eliges: ' + falta.join(', ') + '.', 'Agregar así', 'Seguir eligiendo'))) return;
   const v = A.v[V], id = EK || 'arm' + Date.now(), prev = EK ? cart[EK] : null;
   const fotos = gKeys().flatMap(g => S[g] || []).map(i => tops.find(t => t.id === i)?.imagen).filter(Boolean).slice(0, 4);
   const nota = gKeys().filter(g => (S[g] || []).length).map(g => `${GN[g]}: ${S[g].map(nm).filter(Boolean).join(', ')}`).join(' · ');
-  cart[id] = { id, nombre: `${A.n} · ${v.n}`, precio: armTotal(), cant: prev?.cant || 1, nota, fotos, arm: { a: A.id, v: V, s: JSON.parse(JSON.stringify(S)) } };
+  cart[id] = { id, nombre: A.v.length > 1 ? `${A.n} · ${v.n}` : A.n, precio: armTotal(), cant: prev?.cant || 1, nota, fotos, arm: { a: A.id, v: V, s: JSON.parse(JSON.stringify(S)) } };
   save(); $('arm').style.display = 'none';
   if (EK) { EK = null; $('sheetBg').style.display = 'block'; sheet(); }
   render(); toast('Listo ✓');
@@ -658,10 +667,10 @@ $('ajs').onclick = e => {
 };
 function renderAj() {
   const l = tops.filter(t => !oFil || gOf(t) === oFil);
-  $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar toppings, coberturas, frutas y cremas</button><small>Solo agrega las que falten.</small></div>
-  <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff"><option value="topping">Toppings</option><option value="cobertura">Coberturas</option><option value="fruta">Frutas</option><option value="crema">Cremas</option></select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
+  $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar opciones iniciales (dulces y snacks)</button><small>Solo agrega las que falten.</small></div>
+  <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff">${GO.map(g => `<option value="${g}"${g === (oFil || 'topping') ? ' selected' : ''}>${GN[g]}</option>`).join('')}</select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
   <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GO.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
-  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)]}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar toppings, coberturas…".</div>'}</div>`;
+  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)]}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar opciones iniciales".</div>'}</div>`;
 }
 $('aj').onclick = async e => {
   const t = e.target, id = t.dataset.ti || t.dataset.tt || t.dataset.td;
