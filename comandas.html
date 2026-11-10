@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Comandas · Berry Sweet</title>
 <meta name="theme-color" content="#d6336c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Comandas">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <style>
 :root{--bg:#fff7f9;--card:#fff;--ink:#2b1d22;--mut:#8a747b;--pri:#d6336c;--pri2:#fce4ec;--line:#f1d9e0;--ok:#2f9e44}
@@ -136,6 +143,7 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 #pay h3{margin:0 0 2px;font-size:19px}#pay .pt{font-size:32px;font-weight:800;color:var(--pri);margin:2px 0 6px}#pay p{margin:0 0 10px;color:var(--mut)}
 .pm{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:15px;font-size:17px;font-weight:700;margin-bottom:8px}
 .pmx{width:100%;border:0;background:none;color:var(--mut);padding:10px;font-size:15px;font-weight:600}
+#ibtn{display:none;border:0;background:var(--pri);color:#fff;border-radius:12px;padding:0 12px;font-size:14px;font-weight:700;white-space:nowrap}
 .test{border-color:#e03131;margin-top:14px}.test h3{color:#e03131;margin:0 0 4px}.test small{display:block;color:var(--mut);margin-bottom:8px}
 .test button{display:block;width:100%;border:1px solid #e03131;background:#fff;color:#e03131;border-radius:12px;padding:13px;font-size:15px;font-weight:700;margin-top:8px}
 .test button.all{background:#e03131;color:#fff}.test button:disabled{opacity:.5}
@@ -195,7 +203,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <body>
 <header>
   <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button></div>
-  <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button></div>
+  <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button><button id="ibtn" aria-label="Instalar app">📲 Instalar</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
 <main id="ords" style="display:none"></main>
@@ -679,10 +687,10 @@ function openFi(id) {
     <button class="send" data-fa="${p.id}">Agregar al pedido</button><button class="sec" data-fc="1">Cerrar</button></div>`;
   $('fiBg').style.display = 'block';
 }
-$('fiBg').onclick = e => {
+$('fiBg').onclick = async e => {
   const a = e.target.dataset.fa;
-  if (a) { const p = products.find(x => x.id === a); (cart[a] ||= { id: a, nombre: p.nombre, precio: Number(p.precio) || 0, cant: 0, nota: '', img: p.imagen || '' }).cant++; save(); render(); toast('Agregado ✓'); }
   if (a || e.target.dataset.fc || e.target.id === 'fiBg') $('fiBg').style.display = 'none';
+  if (a) { const p = products.find(x => x.id === a); if (p && await addProd(p)) { save(); render(); toast('Agregado ✓'); } }
 };
 function renderChips() {
   const used = ['todos', ...Object.keys(CATS).filter(k => products.some(p => p.categoria === k))];
@@ -707,13 +715,40 @@ function search() {
   return out.sort((a, b) => b[0] - a[0]).map(x => x[1]);
 }
 
+// Tamaños para productos cuyo nombre empieza con "Fresas" (incluye las de Oreo, etc.)
+// El precio guardado en el producto es el de 12 oz; 16 oz suma el extra de abajo (ajústalo si cambia).
+const FRESA_TAMS = [{ n: '12 oz', extra: 0 }, { n: '16 oz', extra: 10 }];
+const needsSize = p => /^fresas?\b/.test(norm(p.nombre)) && !/\boz\b/.test(norm(p.nombre));
+const inCart = p => Object.values(cart).reduce((n, i) => n + ((i.pid || i.id) === p.id ? i.cant : 0), 0);
+function sizeAsk(p) {
+  return new Promise(res => {
+    const bg = $('payBg'), box = $('pay'), base = Number(p.precio) || 0;
+    const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
+    box.innerHTML = `<h3>${esc(p.nombre)}</h3><p>Elige el tamaño</p>` +
+      FRESA_TAMS.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(base + t.extra)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
+    bg.style.display = 'flex';
+    bg.onclick = e => {
+      const i = e.target.dataset.i;
+      if (i === undefined) { if (e.target.id === 'payBg') close(null); return; }
+      close(i === 'x' ? null : FRESA_TAMS[+i]);
+    };
+  });
+}
+async function addProd(p) {
+  let sz = null;
+  if (needsSize(p)) { sz = await sizeAsk(p); if (!sz) return false; }
+  const key = sz ? p.id + '~' + sz.n.replace(/\s/g, '') : p.id;
+  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}` : p.nombre, precio: (Number(p.precio) || 0) + (sz ? sz.extra : 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
+  return true;
+}
+
 function render() {
   const r = search();
   const arm = !$('q').value.trim() ? '<button class="armb" id="armb">🍓 Armar producto</button>' : '';
   $('list').innerHTML = arm + (r.length ? r.map(p => `
     <div class="row" data-p="${p.id}"><img src="${esc(img(p.imagen))}" alt="" loading="lazy">
       <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${fmt(p.precio)}</div></div>
-      <button class="add" data-a="${p.id}" aria-label="Agregar ${esc(p.nombre)}">+${cart[p.id] ? `<b>${cart[p.id].cant}</b>` : ''}</button></div>`).join('')
+      <button class="add" data-a="${p.id}" aria-label="Agregar ${esc(p.nombre)}">+${inCart(p) ? `<b>${inCart(p)}</b>` : ''}</button></div>`).join('')
     : '<div class="empty">Sin resultados</div>');
   bar();
 }
@@ -741,7 +776,7 @@ function ticket(o, act) {
   if (navigator.share) navigator.share({ text: txt }).catch(() => {});
   else window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
 }
-const NMESAS = 10; // número de mesas del local
+const NMESAS = 5; // número de mesas del local
 function renderMesas() {
   const cur = $('cli').value.trim(), ocu = new Set(orders.filter(o => o.id !== editId).map(o => o.cliente));
   $('mesas').innerHTML = Array.from({ length: NMESAS }, (_, i) => { const n = 'Mesa ' + (i + 1); return `<button type="button" data-mz="${n}" class="${n === cur ? 'on' : ''}${ocu.has(n) ? ' occ' : ''}">${i + 1}</button>`; }).join('') + (orders.some(o => o.id !== editId && /^Mesa \d+$/.test(o.cliente)) ? '<small>● Mesa con pedido activo</small>' : '');
@@ -768,13 +803,13 @@ function sheet() {
 $('q').addEventListener('input', render);
 $('clr').onclick = () => { $('q').value = ''; render(); $('q').focus(); };
 $('chips').onclick = e => { const c = e.target.dataset.c; if (c) { cat = c; renderChips(); render(); } };
-$('list').onclick = e => {
+$('list').onclick = async e => {
   if (e.target.closest('#armb')) { openArm(); return; }
   const row = e.target.closest('.row');
   if (row && !e.target.closest('[data-a]')) { openFi(row.dataset.p); return; }
   const b = e.target.closest('[data-a]'); if (!b) return;
   const p = products.find(x => x.id === b.dataset.a); if (!p) return;
-  (cart[p.id] ||= { id: p.id, nombre: p.nombre, precio: Number(p.precio) || 0, cant: 0, nota: '', img: p.imagen || '' }).cant++;
+  if (!(await addProd(p))) return;
   save(); render(); if (navigator.vibrate) navigator.vibrate(15);
 };
 $('open').onclick = () => { $('sheetBg').style.display = 'block'; sheet(); };
@@ -817,6 +852,14 @@ $('send').onclick = async () => {
   $('send').disabled = false; toast(was ? 'Cambios guardados ✓' : 'Pedido enviado ✓');
   was ? setView('ords') : render();
 };
+</script>
+<script>
+// App instalable: registra el service worker y muestra el botón "Instalar" cuando el navegador lo permite
+let dip = null; const ib = document.getElementById('ibtn');
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); dip = e; ib.style.display = 'block'; });
+ib.onclick = async () => { if (!dip) return; dip.prompt(); try { await dip.userChoice; } catch (x) {} dip = null; ib.style.display = 'none'; };
+addEventListener('appinstalled', () => { ib.style.display = 'none'; });
+if ('serviceWorker' in navigator && location.protocol === 'https:') addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 </script>
 </body>
 </html>
