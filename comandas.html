@@ -512,20 +512,21 @@ const ARM = [
   { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
   { id: 'mini', n: 'Minipancakes', v: [mk('12 pzas', 70, { fruta: 2, cobertura: 3, topping: 2 }), mk('18 pzas', 95, { fruta: 2, cobertura: 3, topping: 2 })] },
-  { id: 'maruchan', n: 'Maruchan preparada', t: 'tipo', v: [mk('Normal', 25, {}, 'Con limón y salsa Valentina'), mk('Con Cheetos', 75, { bolsa: 1, topsal: UNL }, 'Con queso amarillo, limón y salsa Valentina')] },
+  { id: 'maruchan', n: 'Maruchan preparada', t: 'tipo', v: [mk('Normal', 25, {}, 'Con limón y salsa Valentina'), mk('Con Cheetos', 75, { bolsa: 1, topsal: UNL, cobmar: UNL }, 'Incluye limón')] },
   { id: 'snack', n: 'Vaso snack', v: [mk('Único', 70, { bolsa: 2, topsal: UNL, cobsal: UNL }, 'Toppings y coberturas a elección')] }
 ];
-const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings', bolsa: 'Bolsitas', topsal: 'Toppings salados', cobsal: 'Coberturas saladas' };
-const GO = ['crema', 'fruta', 'cobertura', 'topping', 'bolsa', 'topsal', 'cobsal'];
+const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings', bolsa: 'Bolsitas', topsal: 'Toppings salados', cobsal: 'Coberturas saladas', cobmar: 'Coberturas Maruchan' };
+const GO = ['crema', 'fruta', 'cobertura', 'topping', 'bolsa', 'topsal', 'cobsal', 'cobmar'];
 const limTxt = (g, n) => n >= UNL ? `${GN[g]} a elección` : g === 'bolsa' ? `${n} ${n > 1 ? 'bolsitas' : 'bolsita'}` : `${n} ${GN[g].toLowerCase()}`;
 const SEED = {
   topping: ['Almendra', 'Arándano', 'Chocoretas', 'Suspiritos', 'Cranky', "M&M's", 'Lunetas de yogur', 'Chispitas de chocolate', 'Nuez', 'Granillo', 'Ajonjolí'],
   cobertura: ['Mermelada de fresa', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
   fruta: ['Durazno', 'Uva', 'Fresa', 'Plátano'],
   crema: ['Clásica', 'Moka', 'Vainilla'],
-  bolsa: ['Doritos', 'Rancheritos', "Cheetos Flamin' Hot", 'Cheetos naranja', 'Sabritas'],
-  topsal: ['Gomitas de durazno', 'Gomitas de lombriz', 'Picafresas', 'Pulparindo', 'Cacahuate japonés', 'Cacahuate enchilado'],
-  cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina']
+  bolsa: ['Doritos', 'Ruffles', 'Sabritas', 'Churrumais', 'Rancheritos', 'Cheetos naranja', "Cheetos Flamin' Hot", "Cheetos morados (Flamin' Hot)"],
+  topsal: ['Gomitas de durazno', 'Gomitas de lombriz', 'Picafresas', 'Pulparindo', 'Cacahuate japonés', 'Cacahuate partido', 'Cacahuate enchilado', 'Gomitas de frutas', 'Panditas'],
+  cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina'],
+  cobmar: ['Salsa Valentina', 'Queso amarillo']
 };
 let tops = [], A = null, V = 0, G = '', S = {}, EK = null, SZ = false, SZD = false;
 const gOf = t => t.grupo || 'topping';
