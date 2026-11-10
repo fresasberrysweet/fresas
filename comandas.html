@@ -502,9 +502,11 @@ $('ords').onclick = async e => {
   }
 };
 
+// Precios estándar de TODAS las vasos de fresas (armadas y especiales: Oreo, mazapán, Ferrero…)
+const PRECIO_FRESA = { '12 oz': 85, '16 oz': 95, '24 oz': 125 };
 const mk = (n, p, g) => ({ n, p, g });
 const ARM = [
-  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', 85, { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', 95, { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', 120, { crema: 1, cobertura: 2, topping: 3 })] },
+  { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', PRECIO_FRESA['12 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', PRECIO_FRESA['16 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', PRECIO_FRESA['24 oz'], { crema: 1, cobertura: 2, topping: 3 })] },
   { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
@@ -683,7 +685,7 @@ $('aj').onclick = async e => {
 
 function openFi(id) {
   const p = products.find(x => x.id === id); if (!p) return;
-  $('fi').innerHTML = `<img src="${esc(img(p.imagen))}" alt=""><div class="bd"><h2>${esc(p.nombre)}</h2><div class="pc">${fmt(p.precio)} · ${esc(CATS[p.categoria] || p.categoria || '')}</div><p>${esc(p.descripcion || 'Sin descripción')}</p>
+  $('fi').innerHTML = `<img src="${esc(img(p.imagen))}" alt=""><div class="bd"><h2>${esc(p.nombre)}</h2><div class="pc">${priceTxt(p)} · ${esc(CATS[p.categoria] || p.categoria || '')}</div><p>${esc(p.descripcion || 'Sin descripción')}</p>
     <button class="send" data-fa="${p.id}">Agregar al pedido</button><button class="sec" data-fc="1">Cerrar</button></div>`;
   $('fiBg').style.display = 'block';
 }
@@ -716,16 +718,17 @@ function search() {
 }
 
 // Tamaños para productos cuyo nombre empieza con "Fresas" (incluye las de Oreo, etc.)
-// El precio guardado en el producto es el de 12 oz; 16 oz suma el extra de abajo (ajústalo si cambia).
-const FRESA_TAMS = [{ n: '12 oz', extra: 0 }, { n: '16 oz', extra: 10 }];
+// El precio depende solo del tamaño (PRECIO_FRESA); ignora el precio guardado en el producto.
+const FRESA_TAMS = Object.entries(PRECIO_FRESA).map(([n, precio]) => ({ n, precio }));
+const priceTxt = p => needsSize(p) ? `Desde ${fmt(PRECIO_FRESA['12 oz'])}` : fmt(p.precio);
 const needsSize = p => /^fresas?\b/.test(norm(p.nombre)) && !/\boz\b/.test(norm(p.nombre));
 const inCart = p => Object.values(cart).reduce((n, i) => n + ((i.pid || i.id) === p.id ? i.cant : 0), 0);
 function sizeAsk(p) {
   return new Promise(res => {
-    const bg = $('payBg'), box = $('pay'), base = Number(p.precio) || 0;
+    const bg = $('payBg'), box = $('pay');
     const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
     box.innerHTML = `<h3>${esc(p.nombre)}</h3><p>Elige el tamaño</p>` +
-      FRESA_TAMS.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(base + t.extra)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
+      FRESA_TAMS.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(t.precio)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
     bg.style.display = 'flex';
     bg.onclick = e => {
       const i = e.target.dataset.i;
@@ -738,7 +741,7 @@ async function addProd(p) {
   let sz = null;
   if (needsSize(p)) { sz = await sizeAsk(p); if (!sz) return false; }
   const key = sz ? p.id + '~' + sz.n.replace(/\s/g, '') : p.id;
-  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}` : p.nombre, precio: (Number(p.precio) || 0) + (sz ? sz.extra : 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
+  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}` : p.nombre, precio: sz ? sz.precio : (Number(p.precio) || 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
   return true;
 }
 
@@ -747,7 +750,7 @@ function render() {
   const arm = !$('q').value.trim() ? '<button class="armb" id="armb">🍓 Armar producto</button>' : '';
   $('list').innerHTML = arm + (r.length ? r.map(p => `
     <div class="row" data-p="${p.id}"><img src="${esc(img(p.imagen))}" alt="" loading="lazy">
-      <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${fmt(p.precio)}</div></div>
+      <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${priceTxt(p)}</div></div>
       <button class="add" data-a="${p.id}" aria-label="Agregar ${esc(p.nombre)}">+${inCart(p) ? `<b>${inCart(p)}</b>` : ''}</button></div>`).join('')
     : '<div class="empty">Sin resultados</div>');
   bar();
