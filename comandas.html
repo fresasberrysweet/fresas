@@ -151,6 +151,7 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 #pay input:focus{border-color:var(--pri)}
 .qk{display:flex;gap:6px;margin:8px 0}
 .qk button{flex:1;border:1px solid var(--line);background:var(--pri2);color:var(--pri);border-radius:12px;padding:11px 2px;font-size:15px;font-weight:700}
+.qk button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 .chg{text-align:center;font-size:24px;font-weight:800;margin:6px 0 12px;color:var(--mut)}
 .chg.ok{color:var(--ok)}.chg.no{color:#e03131;font-size:18px}
 .pm.go{text-align:center;background:var(--ok);border-color:var(--ok);color:#fff}
@@ -417,6 +418,15 @@ function renderHis() {
 const TEST_MODE = true; // ⚠ poner en false antes de usar la app con clientes reales: oculta los botones de borrado
 const testHtml = () => !TEST_MODE ? '' : `<div class="aj test"><h3>🧪 Zona de pruebas</h3><small>Borra datos de Firebase. No se puede deshacer.</small>
   <button data-wipe="ped">Borrar pedidos y cortes</button><button class="all" data-wipe="all">Borrar TODA la base de datos</button></div>`;
+const NUEVOS = [
+  { k: ['brocheta'], nombre: 'Brocheta de 6 minipancakes', descripcion: 'Fresa, plátano, Nutella y lechera', precio: 40, categoria: 'pancakes' },
+  { k: ['crepag', 'mazapan'], nombre: 'Crepaghetti de Mazapán', descripcion: 'Cajeta, plátano picado y mazapán espolvoreado', precio: 95, categoria: 'crepes' },
+  { k: ['crepag', 'filadelfia'], nombre: 'Crepaghetti de Filadelfia', descripcion: 'Queso Filadelfia, plátano, fresa y mermelada de zarzamora', precio: 95, categoria: 'crepes' },
+  { k: ['crepag', 'nutella'], nombre: 'Crepaghetti de Nutella', descripcion: 'Nutella, plátano y fresa', precio: 95, categoria: 'crepes' },
+  { k: ['crepag', 'ferrero'], nombre: 'Crepaghetti de Ferrero Rocher', descripcion: 'Nutella, lechera, fresa, nuez y un chocolate Ferrero', precio: 95, categoria: 'crepes' },
+  { k: ['crepag', 'frutos'], nombre: 'Crepaghetti de Frutos Rojos', descripcion: 'Mermelada de zarzamora, queso Filadelfia, fresa, zarzamora y lechera', precio: 95, categoria: 'crepes' },
+  { k: ['crepag', 'durazno'], nombre: 'Crepaghetti de Durazno', descripcion: 'Lechera, mermelada de durazno y durazno picado en almíbar', precio: 95, categoria: 'crepes' }
+];
 const WIPE = { ped: { cols: ['comandas'], t: '¿Borrar todos los pedidos?', m: 'Se eliminan los pedidos activos, el historial y los cortes de todos los días. Productos y opciones se quedan.' },
   all: { cols: ['comandas', 'productos', 'toppings'], t: '¿Borrar TODA la base de datos?', m: 'Se eliminan pedidos, cortes, productos y opciones de armado (toppings, coberturas, cremas).' } };
 async function wipeDb(k) {
@@ -504,20 +514,26 @@ $('ords').onclick = async e => {
 
 // Precios estándar de TODAS las vasos de fresas (armadas y especiales: Oreo, mazapán, Ferrero…)
 const PRECIO_FRESA = { '12 oz': 85, '16 oz': 95, '24 oz': 125 };
+const PRECIO_TISANA = 35; // precio de cualquier sabor de tisana
 const UNL = 99; // límite "sin tope": se pueden elegir todas las que quieran
 const mk = (n, p, g, d) => ({ n, p, g, d });
 const ARM = [
   { id: 'fresas', n: 'Fresas con crema', v: [mk('12 oz', PRECIO_FRESA['12 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('16 oz', PRECIO_FRESA['16 oz'], { crema: 1, cobertura: 2, topping: 3 }), mk('24 oz', PRECIO_FRESA['24 oz'], { crema: 1, cobertura: 2, topping: 3 })] },
   { id: 'crepa', n: 'Arma tu crepa', v: [mk('Sencilla', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Premium', 90, { fruta: 2, cobertura: 2, topping: 1 })] },
-  { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 1, cobertura: 1, topping: 2 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
+  { id: 'waffle', n: 'Arma tu waffle', v: [mk('Clásico', 85, { fruta: 2, cobertura: 2, topping: 1 }), mk('Especial', 95, { fruta: 2, cobertura: 2, topping: 1 })] },
   { id: 'donitas', n: 'Donitas', v: [mk('6 donitas', 45, { fruta: 2, cobertura: 2, topping: 1 }), mk('12 donitas', 80, { fruta: 2, cobertura: 3, topping: 3 })] },
   { id: 'mini', n: 'Minipancakes', v: [mk('12 pzas', 70, { fruta: 2, cobertura: 3, topping: 2 }), mk('18 pzas', 95, { fruta: 2, cobertura: 3, topping: 2 })] },
   { id: 'maruchan', n: 'Maruchan preparada', t: 'tipo', v: [mk('Normal', 25, {}, 'Con limón y salsa Valentina'), mk('Con Cheetos', 75, { bolsa: 1, topsal: UNL, cobsal: UNL }, 'Incluye limón')] },
-  { id: 'snack', n: 'Vaso snack', v: [mk('Único', 70, { bolsa: 2, topsal: UNL, cobsal: UNL }, 'Toppings y coberturas a elección')] }
+  { id: 'snack', n: 'Vaso snack', v: [mk('Único', 70, { bolsa: 2, topsal: UNL, cobsal: UNL }, 'Toppings y coberturas a elección')] },
+  { id: 'soda', n: 'Soda italiana', v: [{ ...mk('Soda italiana', 75, { sodasab: 1, extrasoda: 1 }, 'Elige tu sabor · perlas explosivas opcionales'), o: ['extrasoda'] }] },
+  { id: 'tisana', n: 'Tisana', v: [mk('Tisana', PRECIO_TISANA, { sabor: 1 }, 'Elige tu sabor')] }
 ];
-const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings', bolsa: 'Bolsitas', topsal: 'Toppings salados', cobsal: 'Coberturas saladas' };
-const GO = ['crema', 'fruta', 'cobertura', 'topping', 'bolsa', 'topsal', 'cobsal'];
-const limTxt = (g, n) => n >= UNL ? `${GN[g]} a elección` : g === 'bolsa' ? `${n} ${n > 1 ? 'bolsitas' : 'bolsita'}` : `${n} ${GN[g].toLowerCase()}`;
+// Las fresas armadas pueden llevar 1 fruta adicional (opcional: no se pide si no la eligen)
+ARM.find(a => a.id === 'fresas').v.forEach(v => { v.g.frutaad = 1; v.o = ['frutaad']; });
+const GN = { crema: 'Crema', fruta: 'Frutas', cobertura: 'Coberturas', topping: 'Toppings', bolsa: 'Bolsitas', topsal: 'Toppings salados', cobsal: 'Coberturas saladas', sabor: 'Sabor de tisana', frutaad: 'Fruta adicional', sodasab: 'Sabor de soda', extrasoda: 'Extras de soda' };
+const GO = ['crema', 'fruta', 'cobertura', 'topping', 'frutaad', 'bolsa', 'topsal', 'cobsal', 'sabor', 'sodasab', 'extrasoda'];
+const OPTG = new Set(['frutaad', 'extrasoda']); // grupos que siempre son opcionales
+const limTxt = (g, n) => OPTG.has(g) ? `${GN[g].toLowerCase()} opcional` : n >= UNL ? `${GN[g]} a elección` : g === 'bolsa' ? `${n} ${n > 1 ? 'bolsitas' : 'bolsita'}` : `${n} ${GN[g].toLowerCase()}`;
 const SEED = {
   topping: ['Almendra', 'Arándano', 'Chocoretas', 'Suspiritos', 'Cranky', "M&M's", 'Lunetas de yogur', 'Chispitas de chocolate', 'Nuez', 'Granillo', 'Ajonjolí'],
   cobertura: ['Mermelada de fresa', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
@@ -525,7 +541,11 @@ const SEED = {
   crema: ['Clásica', 'Moka', 'Vainilla'],
   bolsa: ['Doritos', 'Ruffles', 'Sabritas', 'Churrumais', 'Rancheritos', 'Cheetos naranja', "Cheetos Flamin' Hot", "Cheetos morados (Flamin' Hot)"],
   topsal: ['Gomitas de durazno', 'Gomitas de lombriz', 'Picafresas', 'Pulparindo', 'Cacahuate japonés', 'Cacahuate partido', 'Cacahuate enchilado', 'Gomitas de frutas', 'Panditas'],
-  cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina', 'Queso amarillo']
+  cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina', 'Queso amarillo'],
+  sabor: [['Jengibre y limón', 0], ['Manzanilla, hinojo y aloe vera', 0], ['Sencha y matcha', 0], ['Manzanilla y lavanda', 0, false], ['Té blanco, hierbabuena y menta', 0, false], ['Té negro y durazno', 0, false]], // el 3er dato false = agotado por ahora
+  frutaad: ['Uva', 'Durazno'],
+  sodasab: ['Fresa', 'Mora azul', 'Mango', 'Manzana'],
+  extrasoda: [['Perlas explosivas', 10]]
 };
 let tops = [], A = null, V = 0, G = '', S = {}, EK = null, SZ = false, SZD = false;
 const gOf = t => t.grupo || 'topping';
@@ -542,7 +562,7 @@ function armTotal() { return A.v[V].p + Object.values(S).flat().reduce((x, id) =
 function renderArm() {
   $('arm').querySelector('h2 span').textContent = A ? A.n : 'Armar producto';
   ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A && !SZ ? '' : 'none');
-  if (!A) { $('ag').innerHTML = ARM.map(a => `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}">${a.n}<br><small>${a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join(''); return; }
+  if (!A) { $('ag').innerHTML = ARM.map(a => { const ok = a.v.some(v => v.p != null); return `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}"${ok ? '' : ' disabled'}>${a.n}<br><small>${ok ? a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ') : 'Precio por definir'}</small></button>`; }).join(''); return; }
   if (SZ) {
     $('ag').innerHTML = `<div class="szh">Paso 1 · Elige el ${A.t || 'tamaño'}</div>` + A.v.map((v, i) => `<button class="armb size${SZD && i === V ? ' on' : ''}" data-sz="${i}"${v.p == null ? ' disabled' : ''}><b>${v.n}</b><span>${v.p == null ? 'Precio por definir' : fmt(v.p)}</span><small>${v.d ? esc(v.d) + (GO.some(g => v.g[g]) ? ' · ' : '') : ''}${GO.filter(g => v.g[g]).map(g => limTxt(g, v.g[g])).join(' · ')}</small></button>`).join('');
     return;
@@ -590,7 +610,7 @@ $('ag').onclick = e => {
 };
 $('aok').onclick = async () => {
   if (!A) return;
-  const falta = gKeys().filter(g => lim()[g] < UNL && (S[g] || []).length < lim()[g]).map(g => GN[g].toLowerCase());
+  const falta = gKeys().filter(g => lim()[g] < UNL && !(A.v[V].o || []).includes(g) && (S[g] || []).length < lim()[g]).map(g => GN[g].toLowerCase());
   if (falta.length && !(await ask('Faltan opciones', 'Aún no eliges: ' + falta.join(', ') + '.', 'Agregar así', 'Seguir eligiendo'))) return;
   const v = A.v[V], id = EK || 'arm' + Date.now(), prev = EK ? cart[EK] : null;
   const fotos = gKeys().flatMap(g => S[g] || []).map(i => tops.find(t => t.id === i)?.imagen).filter(Boolean).slice(0, 4);
@@ -667,7 +687,9 @@ $('ajs').onclick = e => {
 };
 function renderAj() {
   const l = tops.filter(t => !oFil || gOf(t) === oFil);
-  $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar opciones iniciales (dulces y snacks)</button><small>Solo agrega las que falten.</small></div>
+  $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar opciones iniciales (dulces y snacks)</button><small>Solo agrega las que falten.</small>
+    <button class="b" id="cp" style="margin-top:10px">Agregar productos nuevos (brocheta y crepaghetti)</button><small>Solo agrega los que no existan ya en el menú.</small>
+    <button class="b" id="cm" style="margin-top:10px">Copiar menú actual</button><small>Copia productos y opciones para pegarlos en el chat y compararlos.</small></div>
   <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff">${GO.map(g => `<option value="${g}"${g === (oFil || 'topping') ? ' selected' : ''}>${GN[g]}</option>`).join('')}</select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
   <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GO.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
   ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)] || 'Otra'}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar opciones iniciales".</div>'}</div>`;
@@ -682,8 +704,25 @@ $('aj').onclick = async e => {
       else updateDoc(doc(db, 'toppings', o.id), { grupo: 'cobsal' });
     }
     const cur = tops.map(o => gOf(o) === 'cobmar' ? { ...o, grupo: 'cobsal' } : o);
-    for (const g of Object.keys(SEED)) for (const x of SEED[g]) if (!cur.some(o => gOf(o) === g && norm(o.nombre) === norm(x))) { addDoc(collection(db, 'toppings'), { nombre: x, grupo: g, extra: 0, activo: true, imagen: '' }); n++; }
+    for (const g of Object.keys(SEED)) for (const x of SEED[g]) { const [nn, ex, ac] = Array.isArray(x) ? x : [x, 0]; if (!cur.some(o => gOf(o) === g && norm(o.nombre) === norm(nn))) { addDoc(collection(db, 'toppings'), { nombre: nn, grupo: g, extra: ex, activo: ac !== false, imagen: '' }); n++; } }
     toast(n ? `${n} agregadas ✓` : 'Ya estaban todas'); setTimeout(() => t.disabled = false, 1500);
+  }
+  if (t.id === 'cp') {
+    t.disabled = true; const ya = []; let n = 0;
+    for (const x of NUEVOS) {
+      if (all.some(p => x.k.every(w => norm(p.nombre).includes(w)))) ya.push(x.nombre);
+      else { addDoc(collection(db, 'productos'), { nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, categoria: x.categoria, imagen: '', activo: true }); n++; }
+    }
+    toast(n ? `${n} productos agregados ✓${ya.length ? ' · ya existían ' + ya.length : ''}` : 'Ya estaban todos'); setTimeout(() => t.disabled = false, 1500);
+  }
+  if (t.id === 'cm') {
+    const L = ['MENÚ (categoría | nombre | precio | estado | descripción)'];
+    [...all].sort((a, b) => String(a.categoria).localeCompare(String(b.categoria))).forEach(p => L.push([CATS[p.categoria] || p.categoria || '-', p.nombre, p.precio, p.activo === false ? 'inactivo' : 'activo', p.descripcion || ''].join(' | ')));
+    L.push('', 'OPCIONES (grupo: nombre +extra)');
+    GO.forEach(g => { const l = tops.filter(o => gOf(o) === g); if (l.length) L.push(`${GN[g]}: ` + l.map(o => o.nombre + (o.extra > 0 ? ' +' + o.extra : '') + (o.activo === false ? ' (inactivo)' : '')).join(', ')); });
+    const txt = L.join('\n');
+    try { await navigator.clipboard.writeText(txt); toast('Menú copiado ✓ pégalo en el chat'); }
+    catch (err) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = 'menu-actual.txt'; a.click(); toast('Menú descargado ✓'); }
   }
   if (t.id === 'ca') {
     const lines = $('cl').value.split('\n').map(l => l.trim()).filter(Boolean);
@@ -735,28 +774,50 @@ function search() {
 // Tamaños para productos cuyo nombre empieza con "Fresas" (incluye las de Oreo, etc.)
 // El precio depende solo del tamaño (PRECIO_FRESA); ignora el precio guardado en el producto.
 const FRESA_TAMS = Object.entries(PRECIO_FRESA).map(([n, precio]) => ({ n, precio }));
-const priceTxt = p => needsSize(p) ? `Desde ${fmt(PRECIO_FRESA['12 oz'])}` : fmt(p.precio);
+const TAMS_CHEESE = [{ n: '12 oz', precio: 110 }, { n: '16 oz', precio: 120 }]; // fresas de cheesecake: otros precios, sin 24 oz
+const tamsFor = p => /cheesecake/.test(norm(p.nombre)) ? TAMS_CHEESE : FRESA_TAMS;
+const priceTxt = p => needsSize(p) ? `Desde ${fmt(Math.min(...tamsFor(p).map(t => t.precio)))}` : fmt(p.precio);
 const needsSize = p => /^fresas?\b/.test(norm(p.nombre)) && !/\boz\b/.test(norm(p.nombre));
 const inCart = p => Object.values(cart).reduce((n, i) => n + ((i.pid || i.id) === p.id ? i.cant : 0), 0);
 function sizeAsk(p) {
   return new Promise(res => {
     const bg = $('payBg'), box = $('pay');
+    const fo = tops.filter(t => gOf(t) === 'frutaad' && t.activo !== false), tams = tamsFor(p);
+    let fr = null;
     const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
-    box.innerHTML = `<h3>${esc(p.nombre)}</h3><p>Elige el tamaño</p>` +
-      FRESA_TAMS.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(t.precio)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
-    bg.style.display = 'flex';
+    const draw = () => {
+      const ex = Number(fo.find(t => t.id === fr)?.extra) || 0;
+      box.innerHTML = `<h3>${esc(p.nombre)}</h3>` +
+        (fo.length ? `<p>Fruta adicional (opcional)</p><div class="qk">${fo.map(t => `<button class="${fr === t.id ? 'on' : ''}" data-f="${t.id}">${esc(t.nombre)}${t.extra > 0 ? ' +' + fmt(t.extra) : ''}</button>`).join('')}</div>` : '') +
+        '<p>Elige el tamaño</p>' +
+        tams.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(t.precio + ex)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
+    };
+    draw(); bg.style.display = 'flex';
     bg.onclick = e => {
-      const i = e.target.dataset.i;
-      if (i === undefined) { if (e.target.id === 'payBg') close(null); return; }
-      close(i === 'x' ? null : FRESA_TAMS[+i]);
+      const d = e.target.dataset;
+      if (d.f !== undefined) { fr = fr === d.f ? null : d.f; draw(); return; }
+      if (d.i === undefined) { if (e.target.id === 'payBg') close(null); return; }
+      close(d.i === 'x' ? null : { ...tams[+d.i], fr: fo.find(t => t.id === fr) || null });
     };
   });
 }
+const needsChip = p => /crepa/.test(norm(p.nombre)) && /(hawaian|pepperoni)/.test(norm(p.nombre)) && !needsSize(p);
+function choiceAsk(title, sub, opts) {
+  return new Promise(res => {
+    const bg = $('payBg'), box = $('pay');
+    const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
+    box.innerHTML = `<h3>${esc(title)}</h3><p>${esc(sub)}</p>` + opts.map(o => `<button class="pm" data-c="${o.v}">${o.l}</button>`).join('') + '<button class="pmx" data-c="x">Cancelar</button>';
+    bg.style.display = 'flex';
+    bg.onclick = e => { const c = e.target.dataset.c; if (c === undefined) { if (e.target.id === 'payBg') close(null); return; } close(c === 'x' ? null : c); };
+  });
+}
 async function addProd(p) {
-  let sz = null;
+  let sz = null, chip = null;
   if (needsSize(p)) { sz = await sizeAsk(p); if (!sz) return false; }
-  const key = sz ? p.id + '~' + sz.n.replace(/\s/g, '') : p.id;
-  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}` : p.nombre, precio: sz ? sz.precio : (Number(p.precio) || 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
+  if (needsChip(p)) { chip = await choiceAsk(p.nombre, '¿Con chipotle?', [{ l: 'Con chipotle', v: 'con' }, { l: 'Sin chipotle', v: 'sin' }]); if (!chip) return false; }
+  const fr = sz && sz.fr; let key = sz ? p.id + '~' + sz.n.replace(/\s/g, '') + (fr ? '~' + fr.id : '') : p.id;
+  if (chip) key += '~' + chip;
+  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}${fr ? ' + ' + fr.nombre : ''}` : p.nombre + (chip ? ` · ${chip} chipotle` : ''), precio: sz ? sz.precio + (Number(fr && fr.extra) || 0) : (Number(p.precio) || 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
   return true;
 }
 
