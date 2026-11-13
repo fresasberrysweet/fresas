@@ -218,6 +218,13 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .lyst i.on{border:2px solid var(--pri);filter:none;opacity:1;background:var(--pri2)}
 .lyc select{width:100%;font-size:16px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin:6px 0 10px}
 .send.pk{background:var(--pri)}
+.lyq{width:56px;height:56px;border-radius:8px;image-rendering:pixelated;background:#fff;border:1px solid var(--line);flex:none}
+.lbd{display:inline-block;font-style:normal;font-size:12px;font-weight:700;border-radius:8px;padding:1px 8px;margin-bottom:2px}
+.lbd.ok{background:#e6f7ea;color:#2f9e44}.lbd.no{background:#fff4e0;color:#b06b00}
+.tr [data-kd]{background:#fff0f0;color:#c92a2a}
+#lyBig{position:fixed;inset:0;z-index:15;background:#2b1d2299;display:none;align-items:center;justify-content:center;padding:20px}
+#lyBig .lyc{margin:0;width:100%;max-width:340px}
+#lyt button{font-size:13.5px;padding:11px 2px}
 </style>
 </head>
 <body>
@@ -260,15 +267,18 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <div id="calBg"><div id="cal"></div></div>
 <div id="payBg"><div id="pay"></div></div>
 <div id="ly"><div class="lyh"><h2><span>Lealtad</span><button class="x" id="lyx" aria-label="Cerrar">✕</button></h2>
-<div class="seg" id="lyt"><button class="on" data-lt="crear">Crear QR</button><button data-lt="scan">Escanear</button><button data-lt="reg">Regalos</button></div></div>
+<div class="seg" id="lyt"><button class="on" data-lt="crear">Crear QR</button><button data-lt="scan">Escanear</button><button data-lt="tar">Tarjetas</button><button data-lt="reg">Regalos</button></div></div>
 <div class="lybd">
   <div id="lyCrear"><div class="f">Teléfono del cliente (opcional)<input id="lyTel" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"></div>
     <button class="send" id="lyGo">Crear tarjeta con QR</button><div id="lyQr"></div></div>
   <div id="lyScan" style="display:none"><video id="lyVid" playsinline muted></video><div class="lymsg" id="lyMsg"></div>
     <div class="f">O busca por teléfono<div class="lyline"><input id="lyBus" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"><button class="lyb2" id="lyBusBtn">Buscar</button></div></div><div id="lyCli"></div></div>
+  <div id="lyTar" style="display:none"><div class="chips" id="lyKc"></div>
+    <input id="lyKq" type="search" inputmode="numeric" placeholder="Buscar por teléfono…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin:6px 0 10px"><div id="lyKl"></div></div>
   <div id="lyReg" style="display:none"><div class="lymsg">Activa los productos que se pueden regalar al completar los sellos.</div>
     <input id="lyRq" type="search" placeholder="Buscar producto…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:10px"><div id="lyRl"></div></div>
 </div></div>
+<div id="lyBig"></div>
 <div id="undo"></div>
 <div id="toast"></div>
 
@@ -975,31 +985,34 @@ function lyTab(t) {
   $('lyCrear').style.display = t === 'crear' ? '' : 'none';
   $('lyScan').style.display = t === 'scan' ? '' : 'none';
   $('lyReg').style.display = t === 'reg' ? '' : 'none';
+  $('lyTar').style.display = t === 'tar' ? '' : 'none';
+  if (t === 'tar') lyKStart(); else lyKStop();
   if (t === 'scan') lyStart(); else lyStop();
   if (t === 'reg') lyRegalos();
 }
 $('lyt').onclick = e => { const b = e.target.closest('[data-lt]'); if (b) lyTab(b.dataset.lt); };
 $('qrbtn').onclick = () => { $('ly').style.display = 'flex'; lyTab('crear'); };
 $('lyx').onclick = () => {
-  lyStop(); lyUnsub && lyUnsub(); lyUnsub = null; lyCid = null;
+  lyStop(); lyKStop(); lyUnsub && lyUnsub(); lyUnsub = null; lyCid = null; $('lyBig').style.display = 'none';
   $('lyCli').innerHTML = ''; $('lyQr').innerHTML = ''; $('ly').style.display = 'none';
 };
 
 // --- Crear QR ---
-function lyShowQr(id, tel) {
+function lyQrHtml(id, tel) {
   const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make();
   lyUrl = q.createDataURL(10, 3);
-  $('lyQr').innerHTML = `<div class="lyc"><img src="${lyUrl}" alt="QR de la tarjeta"><div class="lymsg">${tel ? esc(tel) : 'Sin teléfono'}</div>
-    <div class="lyr"><button class="lyb2" id="lyShare">Compartir</button><a class="lyb2" href="${lyUrl}" download="tarjeta-berry-sweet.png">Descargar</a></div></div>`;
+  return `<div class="lyc"><img src="${lyUrl}" alt="QR de la tarjeta"><div class="lymsg">${tel ? esc(tel) : 'Sin teléfono'}</div>
+    <div class="lyr"><button class="lyb2" data-share>Compartir</button><a class="lyb2" href="${lyUrl}" download="tarjeta-berry-sweet.png">Descargar</a></div></div>`;
 }
-$('lyQr').onclick = async e => {
-  if (e.target.id !== 'lyShare') return;
+const lyShowQr = (id, tel) => { $('lyQr').innerHTML = lyQrHtml(id, tel); };
+document.addEventListener('click', async e => {
+  if (!e.target.closest('[data-share]')) return;
   try {
     const blob = await (await fetch(lyUrl)).blob(), f = new File([blob], 'tarjeta-berry-sweet.png', { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'Tarjeta de lealtad' });
     else toast('Usa Descargar y envíala desde tu galería');
   } catch (err) { if (err.name !== 'AbortError') toast('No se pudo compartir'); }
-};
+});
 $('lyGo').onclick = async () => {
   const raw = $('lyTel').value.trim(), t = lyTel(raw);
   if (raw && t.length !== 10) { toast('Escribe 10 dígitos o deja el teléfono vacío'); return; }
@@ -1090,6 +1103,49 @@ $('lyRl').onclick = async e => {
   try { await updateDoc(doc(db, 'productos', b.dataset.rg), { regalo: on }); toast(on ? 'Se puede regalar ✓' : 'Quitado de regalos'); }
   catch (err) { console.error(err); b.classList.toggle('on', !on); toast('No se pudo cambiar'); }
 };
+
+// --- Tarjetas generadas (ver todas, con/sin teléfono, eliminar) ---
+let lyKUnsub = null, lyKList = [], lyKF = 'todas'; const lyTh = {};
+const lyThumb = id => lyTh[id] || (lyTh[id] = (() => { const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make(); return q.createDataURL(3, 2); })());
+function lyKStart() {
+  if (lyKUnsub) return;
+  lyKUnsub = onSnapshot(lyCol, s => {
+    lyKList = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.creado?.seconds ?? 9e9) - (a.creado?.seconds ?? 9e9));
+    lyKRender();
+  }, () => { $('lyKl').innerHTML = '<div class="empty">No se pudo cargar. Revisa tu conexión</div>'; });
+}
+function lyKStop() { lyKUnsub && lyKUnsub(); lyKUnsub = null; }
+function lyKRender() {
+  const con = lyKList.filter(c => c.telefono).length, sin = lyKList.length - con;
+  $('lyKc').innerHTML = [['todas', `Todas (${lyKList.length})`], ['con', `Con teléfono (${con})`], ['sin', `Sin teléfono (${sin})`]]
+    .map(([k, n]) => `<button class="chip${k === lyKF ? ' on' : ''}" data-kf="${k}">${n}</button>`).join('');
+  const q = $('lyKq').value.replace(/\D/g, '');
+  const l = lyKList.filter(c => (lyKF === 'con' ? c.telefono : lyKF === 'sin' ? !c.telefono : true) && (!q || (c.telefono || '').includes(q)));
+  $('lyKl').innerHTML = l.length ? l.map(c => `<div class="tr"><img class="lyq" src="${lyThumb(c.id)}" alt="Ver QR" role="button" data-kv="${c.id}">
+    <span><em class="lbd ${c.telefono ? 'ok' : 'no'}">${c.telefono ? 'Con teléfono' : 'Sin teléfono'}</em><br>${c.telefono ? `<b>${esc(c.telefono)}</b> · ` : ''}<small>${c.sellos || 0} de ${LY_META} sellos</small></span>
+    <button data-kd="${c.id}" aria-label="Eliminar tarjeta">🗑️</button></div>`).join('')
+    : '<div class="empty">No hay tarjetas para mostrar</div>';
+}
+$('lyKc').onclick = e => { const b = e.target.closest('[data-kf]'); if (b) { lyKF = b.dataset.kf; lyKRender(); } };
+$('lyKq').oninput = lyKRender;
+$('lyKl').onclick = async e => {
+  const v = e.target.closest('[data-kv]'), d = e.target.closest('[data-kd]');
+  if (v) {
+    const c = lyKList.find(x => x.id === v.dataset.kv); if (!c) return;
+    $('lyBig').innerHTML = lyQrHtml(c.id, c.telefono).replace('<div class="lyr">', '<div class="lyr" style="margin-bottom:8px">') + '';
+    $('lyBig').querySelector('.lyc').insertAdjacentHTML('beforeend', '<button class="sec" data-bigx>Cerrar</button>');
+    $('lyBig').style.display = 'flex'; return;
+  }
+  if (!d) return;
+  const c = lyKList.find(x => x.id === d.dataset.kd); if (!c) return;
+  if (!await ask('Eliminar tarjeta', `¿Eliminar la tarjeta ${c.telefono ? 'de ' + c.telefono : 'sin teléfono'}? Perderá sus ${c.sellos || 0} sellos y su QR dejará de funcionar.`, 'Eliminar', 'Cancelar', true)) return;
+  const { id, ...data } = c;
+  try {
+    await deleteDoc(doc(db, 'clientes', id));
+    undo('Tarjeta eliminada', () => setDoc(doc(db, 'clientes', id), data).catch(() => toast('No se pudo restaurar')));
+  } catch (err) { console.error(err); toast('No se pudo eliminar'); }
+};
+$('lyBig').onclick = e => { if (e.target.id === 'lyBig' || e.target.closest('[data-bigx]')) $('lyBig').style.display = 'none'; };
 </script>
 <script>
 // App instalable: registra el service worker y muestra el botón "Instalar" cuando el navegador lo permite
