@@ -149,12 +149,24 @@
             .adm-actions .adm-btn { flex: 1; }
         }
         a.adm-x { display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 16px; }
+        #admVideo { width: 100%; max-height: 260px; border-radius: 16px; background: #000; object-fit: cover; margin-bottom: 10px; }
+        .adm-cli { background: var(--light); border-radius: 16px; padding: 14px; margin-top: 12px; }
+        .adm-cli b { color: var(--dark); }
+        .adm-cli .adm-actions { margin-top: 10px; }
+        #admScanBtn { width: 30px; height: 30px; font-size: 14px; background: transparent; opacity: .55; }
+        #admScanBtn:hover, #admScanBtn:focus-visible { opacity: 1; background: rgba(255,255,255,.2); }
+        a.adm-btn { text-decoration: none; display: inline-block; }
+        .adm-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+        .adm-tab { flex: 1; font: inherit; font-size: 14px; font-weight: 600; border: 2px solid #f1d5e0; background: #fff; color: var(--dark); border-radius: 12px; padding: 8px 4px; cursor: pointer; }
+        .adm-tab.on { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border-color: transparent; }
+        .adm-tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
     </style>
 </head>
 <body>
     <div class="adm-overlay open" id="admOverlay">
         <div class="adm-top">
             <h2>Administrador <small id="admCount">Cargando productos…</small></h2>
+            <button class="adm-x" id="admScanBtn" aria-label="Escanear tarjeta de lealtad" title="Escanear tarjeta de lealtad"><i class="fas fa-qrcode"></i></button>
             <a class="adm-x" href="index.html" aria-label="Ver el menú" title="Ver el menú"><i class="fas fa-arrow-up-right-from-square"></i></a>
         </div>
         <div class="adm-body">
@@ -237,13 +249,51 @@
             </div>
         </div>
     </div>
+    <div class="adm-modal-bg" id="admScanBg">
+        <div class="adm-modal">
+            <h3><i class="fas fa-qrcode"></i> Lealtad</h3>
+            <div class="adm-tabs">
+                <button type="button" class="adm-tab on" data-tab="crear">Crear QR</button>
+                <button type="button" class="adm-tab" data-tab="scan">Escanear</button>
+                <button type="button" class="adm-tab" data-tab="regalos">Regalos</button>
+            </div>
+            <div id="tabCrear">
+                <div class="adm-field">
+                    <label for="admNuevoTel">Teléfono del cliente (opcional)</label>
+                    <input id="admNuevoTel" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14">
+                </div>
+                <button type="button" class="adm-btn primary" id="admCrearQr" style="width:100%">Crear tarjeta con QR</button>
+                <div id="admQrOut"></div>
+            </div>
+            <div id="tabScan" hidden>
+                <video id="admVideo" playsinline muted></video>
+                <p id="admScanMsg">Apunta la cámara al QR del cliente.</p>
+                <div class="adm-field">
+                    <label for="admBuscaTel">O busca por teléfono</label>
+                    <div class="adm-img-line">
+                        <input id="admBuscaTel" type="tel" inputmode="numeric" placeholder="10 dígitos">
+                        <button type="button" class="adm-btn" id="admBuscaBtn">Buscar</button>
+                    </div>
+                </div>
+                <div id="admCliente"></div>
+            </div>
+            <div id="tabRegalos" hidden>
+                <p>Activa los productos que se pueden regalar al completar los sellos.</p>
+                <div class="adm-field"><input id="admRegSearch" type="search" placeholder="Buscar producto" aria-label="Buscar producto"></div>
+                <div id="admRegalos"></div>
+            </div>
+            <div class="adm-actions"><button type="button" class="adm-btn" id="admScanClose">Cerrar</button></div>
+        </div>
+    </div>
     <div class="adm-toast" id="admToast" role="status" aria-live="polite"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
         import {
             getFirestore, collection, onSnapshot, addDoc, updateDoc,
-            deleteDoc, doc, writeBatch, serverTimestamp
+            deleteDoc, doc, writeBatch, serverTimestamp, increment, query, where, getDocs, limit
         } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -447,6 +497,7 @@
                     <button class="adm-icon del" data-del="${p.id}" aria-label="Eliminar ${esc(p.nombre)}"><i class="fas fa-trash"></i></button>
                 </div>`).join('')
                 : (loaded && products.length ? '<div class="adm-empty">Ningún producto coincide con la búsqueda.</div>' : '');
+            renderRegalos();
         }
 
         let toastTimer;
@@ -627,6 +678,170 @@
             if ($('admConfirmBg').classList.contains('open')) closeConfirm();
             else if ($('admFormBg').classList.contains('open')) closeForm();
         });
+
+        // ---------- Lealtad (icono QR): crear, escanear y regalos ----------
+        const META = 10;   // sellos para el premio
+        const clientesCol = collection(db, 'clientes');
+        const phoneOf = (v) => v.replace(/\D/g, '').slice(-10);
+        let stream = null, scanning = false, clienteId = null, unsubCli = null;
+        const video = $('admVideo');
+        const cv = document.createElement('canvas');
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+
+        function setTab(t) {
+            document.querySelectorAll('.adm-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+            $('tabCrear').hidden = t !== 'crear';
+            $('tabScan').hidden = t !== 'scan';
+            $('tabRegalos').hidden = t !== 'regalos';
+            if (t === 'scan') startScan(); else stopScan();
+        }
+        document.querySelectorAll('.adm-tab').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+        $('admScanBtn').onclick = () => { $('admScanBg').classList.add('open'); setTab('crear'); };
+        $('admScanClose').onclick = () => {
+            stopScan();
+            unsubCli && unsubCli(); unsubCli = null; clienteId = null;
+            $('admCliente').innerHTML = ''; $('admQrOut').innerHTML = '';
+            $('admScanBg').classList.remove('open');
+        };
+
+        // --- Crear QR ---
+        function showQr(id, tel) {
+            const qr = qrcode(0, 'M'); qr.addData('BS:' + id); qr.make();
+            const url = qr.createDataURL(10, 3);
+            $('admQrOut').innerHTML = `<div class="adm-cli" style="text-align:center">
+                <img src="${url}" alt="QR de la tarjeta" style="width:220px;height:220px;image-rendering:pixelated">
+                <div class="adm-row-meta">${tel ? esc(tel) : 'Sin teléfono'}</div>
+                <div class="adm-actions" style="justify-content:center"><a class="adm-btn" href="${url}" download="tarjeta-berry-sweet.png">Descargar QR</a></div></div>`;
+        }
+        $('admCrearQr').onclick = async () => {
+            const raw = $('admNuevoTel').value.trim(), t = phoneOf(raw);
+            if (raw && t.length !== 10) { toast('Escribe 10 dígitos o deja el teléfono vacío', true); return; }
+            const btn = $('admCrearQr');
+            btn.disabled = true;
+            try {
+                if (t) {
+                    const r = await getDocs(query(clientesCol, where('telefono', '==', t), limit(1)));
+                    if (!r.empty) { showQr(r.docs[0].id, t); toast('Ese teléfono ya tenía tarjeta'); return; }
+                }
+                const ref = await addDoc(clientesCol, { telefono: t, sellos: 0, canjes: 0, creado: serverTimestamp() });
+                showQr(ref.id, t);
+                $('admNuevoTel').value = '';
+                toast('Tarjeta creada');
+            } catch (err) {
+                console.error(err);
+                toast('No se pudo crear: ' + (err.code || err.message), true);
+            } finally { btn.disabled = false; }
+        };
+
+        // --- Escanear ---
+        async function startScan() {
+            $('admScanMsg').textContent = 'Apunta la cámara al QR del cliente.';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                await video.play();
+                scanning = true;
+                tick();
+            } catch (e) {
+                console.error(e);
+                $('admScanMsg').textContent = 'No se pudo abrir la cámara. Busca al cliente por teléfono.';
+            }
+        }
+        function stopScan() {
+            scanning = false;
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        }
+        function tick() {
+            if (!scanning) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                cv.width = video.videoWidth; cv.height = video.videoHeight;
+                cx.drawImage(video, 0, 0);
+                const img = cx.getImageData(0, 0, cv.width, cv.height);
+                const code = window.jsQR && jsQR(img.data, img.width, img.height);
+                if (code && code.data.startsWith('BS:')) openCliente(code.data.slice(3));
+            }
+            requestAnimationFrame(tick);
+        }
+        function openCliente(id) {
+            if (id === clienteId) return;
+            clienteId = id;
+            if (navigator.vibrate) navigator.vibrate(80);
+            unsubCli && unsubCli();
+            unsubCli = onSnapshot(doc(db, 'clientes', id), (s) => {
+                const box = $('admCliente');
+                if (!s.exists()) { box.innerHTML = '<div class="adm-banner err">Tarjeta no encontrada.</div>'; clienteId = null; return; }
+                const d = s.data(), n = d.sellos || 0;
+                const regalos = products.filter(p => p.regalo === true);
+                let canje = '';
+                if (n >= META) {
+                    canje = regalos.length
+                        ? `<div class="adm-field" style="margin-top:10px"><label for="admRegaloSel">Regalo a entregar</label>
+                            <select id="admRegaloSel">${regalos.map(p => `<option>${esc(p.nombre)}</option>`).join('')}</select></div>
+                           <button type="button" class="adm-btn primary" data-canje style="width:100%">Canjear premio</button>`
+                        : '<div class="adm-banner" style="margin-top:10px">Ya completó los sellos. Activa productos en la pestaña Regalos para poder canjear.</div>';
+                }
+                box.innerHTML = `<div class="adm-cli">
+                    <div><b>${d.telefono ? esc(d.telefono) : 'Sin teléfono'}</b></div>
+                    <div class="adm-row-meta"><b>${n}</b> de ${META} sellos · ${d.canjes || 0} premios canjeados</div>
+                    <div class="adm-actions"><button type="button" class="adm-btn primary" data-sello>Sumar sello</button></div>${canje}</div>`;
+            }, (err) => toast('No se pudo leer la tarjeta: ' + (err.code || err.message), true));
+        }
+        $('admCliente').addEventListener('click', async (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || !clienteId) return;
+            const ref = doc(db, 'clientes', clienteId);
+            btn.disabled = true;
+            try {
+                if (btn.hasAttribute('data-sello')) {
+                    await updateDoc(ref, { sellos: increment(1), ultimo: serverTimestamp() });
+                    toast('Sello agregado');
+                } else if (btn.hasAttribute('data-canje')) {
+                    await updateDoc(ref, { sellos: increment(-META), canjes: increment(1), ultimoPremio: $('admRegaloSel').value, ultimo: serverTimestamp() });
+                    toast('Premio canjeado');
+                }
+            } catch (err) {
+                console.error(err);
+                toast('No se pudo guardar: ' + (err.code || err.message), true);
+                btn.disabled = false;
+            }
+        });
+        $('admBuscaBtn').onclick = async () => {
+            const t = phoneOf($('admBuscaTel').value);
+            if (t.length !== 10) { toast('Escribe un teléfono de 10 dígitos', true); return; }
+            try {
+                const r = await getDocs(query(clientesCol, where('telefono', '==', t), limit(1)));
+                if (r.empty) toast('No hay tarjeta con ese teléfono', true); else openCliente(r.docs[0].id);
+            } catch (err) { console.error(err); toast('No se pudo buscar: ' + (err.code || err.message), true); }
+        };
+
+        // --- Regalos (productos que se pueden regalar) ---
+        function renderRegalos() {
+            const q = $('admRegSearch').value.trim().toLowerCase();
+            const list = products.filter(p => !q || (p.nombre || '').toLowerCase().includes(q));
+            $('admRegalos').innerHTML = list.length ? list.map(p => `
+                <div class="adm-row">
+                    <img src="${esc(imgSrc(p.imagen))}" alt="" loading="lazy">
+                    <div class="adm-row-info">
+                        <div class="adm-row-name">${esc(p.nombre)}</div>
+                        <div class="adm-row-meta">${esc(CATS[p.categoria] || p.categoria)}${p.regalo === true ? ' · <b>Se puede regalar</b>' : ''}</div>
+                    </div>
+                    <label class="adm-switch"><input type="checkbox" data-regalo="${p.id}" ${p.regalo === true ? 'checked' : ''} aria-label="Regalar ${esc(p.nombre)}"><span></span></label>
+                </div>`).join('') : '<div class="adm-empty">No hay productos para mostrar.</div>';
+        }
+        $('admRegSearch').addEventListener('input', renderRegalos);
+        $('admRegalos').addEventListener('change', async (e) => {
+            const t = e.target.closest('[data-regalo]');
+            if (!t) return;
+            try {
+                await updateDoc(doc(db, 'productos', t.dataset.regalo), { regalo: t.checked });
+                toast(t.checked ? 'Producto activado como regalo' : 'Producto quitado de regalos');
+            } catch (err) {
+                console.error(err);
+                t.checked = !t.checked;
+                toast('No se pudo cambiar: ' + (err.code || err.message), true);
+            }
+        });
+
         renderAdmin();
     </script>
 </body>
