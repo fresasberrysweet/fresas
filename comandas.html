@@ -199,11 +199,30 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .armb.size.on{background:var(--pri);border-color:var(--pri);color:#fff}.armb.size.on small{color:#fff}.armb.size:disabled{opacity:.45}
 .szs{display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;font-size:16px;background:var(--pri2);border-radius:14px;padding:8px 8px 8px 14px}
 .szs button{border:1px solid var(--pri);background:#fff;color:var(--pri);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
+.qrb{flex:none;border:0;background:none;color:var(--pri);opacity:.45;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0}
+.qrb:active{opacity:1;background:var(--pri2)}
+#ly{position:fixed;inset:0;z-index:14;background:var(--bg);display:none;flex-direction:column;max-width:640px;margin:0 auto}
+.lyh{padding:calc(12px + env(safe-area-inset-top,0px)) 12px 10px;border-bottom:1px solid var(--line)}
+.lyh h2{display:flex;justify-content:space-between;align-items:center}
+.lybd{flex:1;overflow:auto;padding:12px 12px calc(24px + env(safe-area-inset-bottom,0px))}
+#ly input{font-size:16px}
+#lyVid{width:100%;aspect-ratio:4/3;max-height:40vh;border-radius:16px;background:#000;object-fit:cover;display:block}
+.lymsg{color:var(--mut);font-size:14px;margin:8px 2px}
+.lyline{display:flex;gap:8px}.lyline input{flex:1;min-width:0}
+.lyb2{border:0;background:var(--pri2);color:var(--pri);border-radius:10px;padding:0 16px;min-height:46px;font-size:15px;font-weight:700;margin-top:6px}
+.lyc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px;text-align:center}
+.lyc img{width:min(70vw,260px);aspect-ratio:1;height:auto;image-rendering:pixelated}
+.lyr{display:flex;gap:8px}.lyr .lyb2{flex:1;display:flex;align-items:center;justify-content:center;text-decoration:none;margin:0}
+.lyst{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.lyst i{aspect-ratio:1;border-radius:50%;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;filter:grayscale(1);opacity:.35}
+.lyst i.on{border:2px solid var(--pri);filter:none;opacity:1;background:var(--pri2)}
+.lyc select{width:100%;font-size:16px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;margin:6px 0 10px}
+.send.pk{background:var(--pri)}
 </style>
 </head>
 <body>
 <header>
-  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button></div>
+  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button><button class="qrb" id="qrbtn" aria-label="Lealtad (QR)" title="Lealtad"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v3M14 20h3M20 20h1"/></svg></button></div>
   <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button><button id="ibtn" aria-label="Instalar app">📲 Instalar</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
@@ -240,12 +259,24 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <div id="dlgBg"><div id="dlg" role="dialog" aria-modal="true"><h3 id="dt"></h3><p id="dm"></p><div class="dbt"><button class="dn" id="dn"></button><button class="dy" id="dy"></button></div></div></div>
 <div id="calBg"><div id="cal"></div></div>
 <div id="payBg"><div id="pay"></div></div>
+<div id="ly"><div class="lyh"><h2><span>Lealtad</span><button class="x" id="lyx" aria-label="Cerrar">✕</button></h2>
+<div class="seg" id="lyt"><button class="on" data-lt="crear">Crear QR</button><button data-lt="scan">Escanear</button><button data-lt="reg">Regalos</button></div></div>
+<div class="lybd">
+  <div id="lyCrear"><div class="f">Teléfono del cliente (opcional)<input id="lyTel" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"></div>
+    <button class="send" id="lyGo">Crear tarjeta con QR</button><div id="lyQr"></div></div>
+  <div id="lyScan" style="display:none"><video id="lyVid" playsinline muted></video><div class="lymsg" id="lyMsg"></div>
+    <div class="f">O busca por teléfono<div class="lyline"><input id="lyBus" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"><button class="lyb2" id="lyBusBtn">Buscar</button></div></div><div id="lyCli"></div></div>
+  <div id="lyReg" style="display:none"><div class="lymsg">Activa los productos que se pueden regalar al completar los sellos.</div>
+    <input id="lyRq" type="search" placeholder="Buscar producto…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:10px"><div id="lyRl"></div></div>
+</div></div>
 <div id="undo"></div>
 <div id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, getDocs, writeBatch, doc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, getDocs, writeBatch, doc, query, where, limit, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCOqdSCerlqBgpMoanrGbzRbtfo1P0VGU4",
@@ -351,7 +382,7 @@ function toast(t) { const el = $('toast'); el.textContent = t; el.style.display 
 onSnapshot(collection(db, 'productos'), snap => {
   all = snap.docs.map(d => ({ id: d.id, ...d.data() })); products = all.filter(p => p.activo !== false);
   products.forEach(p => { p._n = norm(p.nombre).split(/\s+/); p._d = norm(p.descripcion).split(/[\s,.;]+/); p._f = norm(p.nombre); });
-  renderChips(); if (view === 'menu') render(); decAdm();
+  renderChips(); if (view === 'menu') render(); decAdm(); lyRegalos();
 }, () => { $('list').innerHTML = '<div class="empty">No se pudo cargar el menú. Revisa tu conexión.</div>'; });
 
 const th = (src, c = 'th') => src ? `<img class="${c}" src="${esc(img(src))}" alt="" loading="lazy">` : '';
@@ -930,6 +961,134 @@ $('send').onclick = async () => {
   cart = {}; save(); $('cli').value = ''; $('sheetBg').style.display = 'none';
   $('send').disabled = false; toast(was ? 'Cambios guardados ✓' : 'Pedido enviado ✓');
   was ? setView('ords') : render();
+};
+
+// ---------- Lealtad (icono QR): crear, escanear y regalos ----------
+const LY_META = 10; // sellos para el premio
+const lyCol = collection(db, 'clientes');
+const lyTel = v => String(v || '').replace(/\D/g, '').slice(-10);
+let lyStream = null, lyOn = false, lyCid = null, lyUnsub = null, lyUrl = '';
+const lyCv = document.createElement('canvas'), lyCx = lyCv.getContext('2d', { willReadFrequently: true });
+
+function lyTab(t) {
+  document.querySelectorAll('#lyt button').forEach(b => b.classList.toggle('on', b.dataset.lt === t));
+  $('lyCrear').style.display = t === 'crear' ? '' : 'none';
+  $('lyScan').style.display = t === 'scan' ? '' : 'none';
+  $('lyReg').style.display = t === 'reg' ? '' : 'none';
+  if (t === 'scan') lyStart(); else lyStop();
+  if (t === 'reg') lyRegalos();
+}
+$('lyt').onclick = e => { const b = e.target.closest('[data-lt]'); if (b) lyTab(b.dataset.lt); };
+$('qrbtn').onclick = () => { $('ly').style.display = 'flex'; lyTab('crear'); };
+$('lyx').onclick = () => {
+  lyStop(); lyUnsub && lyUnsub(); lyUnsub = null; lyCid = null;
+  $('lyCli').innerHTML = ''; $('lyQr').innerHTML = ''; $('ly').style.display = 'none';
+};
+
+// --- Crear QR ---
+function lyShowQr(id, tel) {
+  const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make();
+  lyUrl = q.createDataURL(10, 3);
+  $('lyQr').innerHTML = `<div class="lyc"><img src="${lyUrl}" alt="QR de la tarjeta"><div class="lymsg">${tel ? esc(tel) : 'Sin teléfono'}</div>
+    <div class="lyr"><button class="lyb2" id="lyShare">Compartir</button><a class="lyb2" href="${lyUrl}" download="tarjeta-berry-sweet.png">Descargar</a></div></div>`;
+}
+$('lyQr').onclick = async e => {
+  if (e.target.id !== 'lyShare') return;
+  try {
+    const blob = await (await fetch(lyUrl)).blob(), f = new File([blob], 'tarjeta-berry-sweet.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'Tarjeta de lealtad' });
+    else toast('Usa Descargar y envíala desde tu galería');
+  } catch (err) { if (err.name !== 'AbortError') toast('No se pudo compartir'); }
+};
+$('lyGo').onclick = async () => {
+  const raw = $('lyTel').value.trim(), t = lyTel(raw);
+  if (raw && t.length !== 10) { toast('Escribe 10 dígitos o deja el teléfono vacío'); return; }
+  const btn = $('lyGo'); btn.disabled = true;
+  try {
+    if (t) {
+      const r = await getDocs(query(lyCol, where('telefono', '==', t), limit(1)));
+      if (!r.empty) { lyShowQr(r.docs[0].id, t); toast('Ese teléfono ya tenía tarjeta'); return; }
+    }
+    const ref = await addDoc(lyCol, { telefono: t, sellos: 0, canjes: 0, creado: serverTimestamp() });
+    lyShowQr(ref.id, t); $('lyTel').value = ''; toast('Tarjeta creada ✓');
+  } catch (err) { console.error(err); toast('No se pudo crear. Revisa tu conexión'); }
+  finally { btn.disabled = false; }
+};
+
+// --- Escanear ---
+async function lyStart() {
+  $('lyMsg').textContent = 'Apunta la cámara al QR del cliente.';
+  try {
+    lyStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+    $('lyVid').srcObject = lyStream; await $('lyVid').play(); lyOn = true; lyTick();
+  } catch (e) { console.error(e); $('lyMsg').textContent = 'No se pudo abrir la cámara (revisa el permiso). Busca al cliente por teléfono.'; }
+}
+function lyStop() { lyOn = false; if (lyStream) { lyStream.getTracks().forEach(t => t.stop()); lyStream = null; } }
+function lyTick() {
+  if (!lyOn) return;
+  const v = $('lyVid');
+  if (v.readyState === v.HAVE_ENOUGH_DATA) {
+    lyCv.width = v.videoWidth; lyCv.height = v.videoHeight; lyCx.drawImage(v, 0, 0);
+    const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height);
+    const code = window.jsQR && jsQR(fr.data, fr.width, fr.height);
+    if (code && code.data.startsWith('BS:')) lyOpen(code.data.slice(3));
+  }
+  requestAnimationFrame(lyTick);
+}
+function lyOpen(id) {
+  if (id === lyCid) return;
+  lyCid = id; if (navigator.vibrate) navigator.vibrate(80);
+  lyUnsub && lyUnsub();
+  lyUnsub = onSnapshot(doc(db, 'clientes', id), s => {
+    const box = $('lyCli');
+    if (!s.exists()) { box.innerHTML = '<div class="empty">Tarjeta no encontrada</div>'; lyCid = null; return; }
+    const d = s.data(), n = d.sellos || 0, rg = all.filter(p => p.regalo === true);
+    let canje = '';
+    if (n >= LY_META) canje = rg.length
+      ? `<div class="lymsg" style="margin-top:12px">Regalo a entregar</div><select id="lySel">${rg.map(p => `<option>${esc(p.nombre)}</option>`).join('')}</select><button class="send" data-canje>Canjear premio</button>`
+      : '<div class="lymsg" style="margin-top:12px">Completó los sellos. Activa productos en la pestaña Regalos para poder canjear.</div>';
+    box.innerHTML = `<div class="lyc"><b>${d.telefono ? esc(d.telefono) : 'Sin teléfono'}</b>
+      <div class="lyst">${Array.from({ length: LY_META }, (_, i) => `<i class="${i < n ? 'on' : ''}">🍓</i>`).join('')}</div>
+      <div class="lymsg" style="margin-top:0">${n} de ${LY_META} sellos · ${d.canjes || 0} premios canjeados</div>
+      <button class="send pk" data-sello>Sumar sello</button>${canje}</div>`;
+  }, () => toast('No se pudo leer la tarjeta'));
+}
+$('lyCli').onclick = async e => {
+  const b = e.target.closest('button'); if (!b || !lyCid) return;
+  const ref = doc(db, 'clientes', lyCid);
+  try {
+    if (b.hasAttribute('data-sello')) {
+      b.disabled = true;
+      await updateDoc(ref, { sellos: increment(1), ultimo: serverTimestamp() }); toast('Sello agregado ✓');
+    } else if (b.hasAttribute('data-canje')) {
+      const nom = $('lySel').value;
+      if (!await ask('Entregar premio', `¿Entregar «${nom}» y descontar ${LY_META} sellos?`, 'Entregar')) return;
+      b.disabled = true;
+      await updateDoc(ref, { sellos: increment(-LY_META), canjes: increment(1), ultimoPremio: nom, ultimo: serverTimestamp() }); toast('Premio canjeado ✓');
+    }
+  } catch (err) { console.error(err); toast('No se pudo guardar'); b.disabled = false; }
+};
+$('lyBusBtn').onclick = async () => {
+  const t = lyTel($('lyBus').value);
+  if (t.length !== 10) { toast('Escribe un teléfono de 10 dígitos'); return; }
+  try {
+    const r = await getDocs(query(lyCol, where('telefono', '==', t), limit(1)));
+    if (r.empty) toast('No hay tarjeta con ese teléfono'); else lyOpen(r.docs[0].id);
+  } catch (err) { console.error(err); toast('No se pudo buscar'); }
+};
+
+// --- Regalos (productos que se pueden regalar) ---
+function lyRegalos() {
+  if ($('ly').style.display !== 'flex') return;
+  const q = norm($('lyRq').value), l = all.filter(p => !q || norm(p.nombre).includes(q));
+  $('lyRl').innerHTML = l.length ? l.map(p => `<div class="tr">${thp(p.imagen)}<span class="${p.activo === false ? 'off' : ''}">${esc(p.nombre)}<br><small>${esc(CATS[p.categoria] || p.categoria || '')}</small></span><button class="sw${p.regalo === true ? ' on' : ''}" data-rg="${p.id}" aria-label="Regalar ${esc(p.nombre)}"></button></div>`).join('') : '<div class="empty">No hay productos</div>';
+}
+$('lyRq').oninput = lyRegalos;
+$('lyRl').onclick = async e => {
+  const b = e.target.closest('[data-rg]'); if (!b) return;
+  const on = !b.classList.contains('on'); b.classList.toggle('on', on);
+  try { await updateDoc(doc(db, 'productos', b.dataset.rg), { regalo: on }); toast(on ? 'Se puede regalar ✓' : 'Quitado de regalos'); }
+  catch (err) { console.error(err); b.classList.toggle('on', !on); toast('No se pudo cambiar'); }
 };
 </script>
 <script>
