@@ -225,6 +225,9 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 #lyBig{position:fixed;inset:0;z-index:15;background:#2b1d2299;display:none;align-items:center;justify-content:center;padding:20px}
 #lyBig .lyc{margin:0;width:100%;max-width:340px}
 #lyt button{font-size:13.5px;padding:11px 2px}
+.lymeta{display:flex;align-items:center;justify-content:center;gap:20px}
+.lymeta button{width:52px;height:52px;border-radius:50%;border:0;background:var(--pri2);color:var(--pri);font-size:26px;font-weight:700;line-height:1}
+.lymeta b{font-size:32px;min-width:52px;color:var(--pri)}
 </style>
 </head>
 <body>
@@ -275,7 +278,9 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
     <div class="f">O busca por teléfono<div class="lyline"><input id="lyBus" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"><button class="lyb2" id="lyBusBtn">Buscar</button></div></div><div id="lyCli"></div></div>
   <div id="lyTar" style="display:none"><div class="chips" id="lyKc"></div>
     <input id="lyKq" type="search" inputmode="numeric" placeholder="Buscar por teléfono…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin:6px 0 10px"><div id="lyKl"></div></div>
-  <div id="lyReg" style="display:none"><div class="lymsg">Activa los productos que se pueden regalar al completar los sellos.</div>
+  <div id="lyReg" style="display:none"><div class="lyc" style="margin:0 0 12px"><div class="lymsg" style="margin:0 0 8px"><b>Sellos para ganar el premio</b></div>
+    <div class="lymeta"><button id="lyMm" aria-label="Menos sellos">−</button><b id="lyMeta">10</b><button id="lyMp" aria-label="Más sellos">+</button></div></div>
+    <div class="lymsg">Activa los productos que se pueden regalar al completar los sellos.</div>
     <input id="lyRq" type="search" placeholder="Buscar producto…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:10px"><div id="lyRl"></div></div>
 </div></div>
 <div id="lyBig"></div>
@@ -974,7 +979,21 @@ $('send').onclick = async () => {
 };
 
 // ---------- Lealtad (icono QR): crear, escanear y regalos ----------
-const LY_META = 10; // sellos para el premio
+let LY_META = 10; // sellos para el premio (editable en Regalos; se guarda en ajustes/lealtad)
+onSnapshot(doc(db, 'ajustes', 'lealtad'), s => {
+  const m = Math.round(Number(s.data()?.meta));
+  LY_META = m >= 1 && m <= 30 ? m : 10;
+  $('lyMeta').textContent = LY_META;
+  if (lyCid) { const id = lyCid; lyCid = null; lyOpen(id); } // redibuja la tarjeta abierta
+  lyKRender();
+});
+async function lySetMeta(n) {
+  n = Math.max(1, Math.min(30, n)); if (n === LY_META) return;
+  try { await setDoc(doc(db, 'ajustes', 'lealtad'), { meta: n }, { merge: true }); toast(`Premio a los ${n} sellos ✓`); }
+  catch (err) { console.error(err); toast('No se pudo guardar'); }
+}
+$('lyMm').onclick = () => lySetMeta(LY_META - 1);
+$('lyMp').onclick = () => lySetMeta(LY_META + 1);
 const lyCol = collection(db, 'clientes');
 const lyTel = v => String(v || '').replace(/\D/g, '').slice(-10);
 let lyStream = null, lyOn = false, lyCid = null, lyUnsub = null, lyUrl = '';
