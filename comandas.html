@@ -206,6 +206,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .lyh h2{display:flex;justify-content:space-between;align-items:center}
 .lybd{flex:1;overflow:auto;padding:12px 12px calc(24px + env(safe-area-inset-bottom,0px))}
 #ly input{font-size:16px}
+#ly select{font-size:16px}
 #lyVid{width:100%;aspect-ratio:4/3;max-height:40vh;border-radius:16px;background:#000;object-fit:cover;display:block}
 .lymsg{color:var(--mut);font-size:14px;margin:8px 2px}
 .lyline{display:flex;gap:8px}.lyline input{flex:1;min-width:0}
@@ -228,11 +229,22 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .lymeta{display:flex;align-items:center;justify-content:center;gap:20px}
 .lymeta button{width:52px;height:52px;border-radius:50%;border:0;background:var(--pri2);color:var(--pri);font-size:26px;font-weight:700;line-height:1}
 .lymeta b{font-size:32px;min-width:52px;color:var(--pri)}
+.qrb{width:34px}
+@media(max-width:400px){.tab{font-size:13px}}
+#iv{position:fixed;inset:0;z-index:14;background:var(--bg);display:none;flex-direction:column;max-width:640px;margin:0 auto}
+#ivt button{font-size:13.5px;padding:11px 2px}
+#iv input,#ivForm input,#ivForm select{font-size:16px}
+#ivForm select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:6px;background:#fff}
+#ivForm{position:fixed;inset:0;z-index:15;background:#2b1d2299;display:none;align-items:center;justify-content:center;padding:20px;overflow:auto}
+#ivForm .lyc{margin:0;width:100%;max-width:380px}
+.ivn{width:84px;flex:none;text-align:center;font-size:20px;font-weight:800;padding:10px 4px;border:2px solid var(--line);border-radius:12px;background:#fff}
+.ivok .ivn{border-color:#40c057;background:#ebfbee}
+.tr [data-ikd]{background:#fff0f0;color:#c92a2a}
 </style>
 </head>
 <body>
 <header>
-  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button><button class="qrb" id="qrbtn" aria-label="Lealtad (QR)" title="Lealtad"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v3M14 20h3M20 20h1"/></svg></button></div>
+  <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button><button class="qrb" id="qrbtn" aria-label="Lealtad (QR)" title="Lealtad"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v3M14 20h3M20 20h1"/></svg></button><button class="qrb" id="ivbtn" aria-label="Inventario" title="Inventario"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></button></div>
   <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button><button id="ibtn" aria-label="Instalar app">📲 Instalar</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
@@ -275,6 +287,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
   <div id="lyCrear"><div class="f">Teléfono del cliente (opcional)<input id="lyTel" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"></div>
     <button class="send" id="lyGo">Crear tarjeta con QR</button><div id="lyQr"></div></div>
   <div id="lyScan" style="display:none"><video id="lyVid" playsinline muted></video><div class="lymsg" id="lyMsg"></div>
+    <button class="lyb2" id="lyImg" style="width:100%;margin:0 0 4px">🖼️ Escanear desde una imagen</button><input type="file" id="lyFile" accept="image/*" hidden>
     <div class="f">O busca por teléfono<div class="lyline"><input id="lyBus" type="tel" inputmode="numeric" placeholder="10 dígitos" maxlength="14" autocomplete="off"><button class="lyb2" id="lyBusBtn">Buscar</button></div></div><div id="lyCli"></div></div>
   <div id="lyTar" style="display:none"><div class="chips" id="lyKc"></div>
     <input id="lyKq" type="search" inputmode="numeric" placeholder="Buscar por teléfono…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin:6px 0 10px"><div id="lyKl"></div></div>
@@ -283,6 +296,20 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
     <div class="lymsg">Activa los productos que se pueden regalar al completar los sellos.</div>
     <input id="lyRq" type="search" placeholder="Buscar producto…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin-bottom:10px"><div id="lyRl"></div></div>
 </div></div>
+<div id="iv"><div class="lyh"><h2><span>Inventario</span><button class="x" id="ivx" aria-label="Cerrar">✕</button></h2>
+<div class="seg" id="ivt"><button class="on" data-it="conteo">Conteo</button><button data-it="ins">Insumos</button><button data-it="sur">Por surtir</button></div></div>
+<div class="lybd">
+  <div id="ivConteo"><div class="lymsg" id="ivProg"></div><div class="chips" id="ivCc"></div>
+    <input id="ivQ" type="search" placeholder="Buscar insumo…" autocomplete="off" style="width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:14px;margin:6px 0 10px"><div id="ivCl"></div></div>
+  <div id="ivIns" style="display:none"><button class="send" id="ivNew">+ Nuevo insumo</button><div id="ivIl" style="margin-top:12px"></div></div>
+  <div id="ivSur" style="display:none"><div id="ivSl"></div></div>
+</div></div>
+<div id="ivForm"><div class="lyc" style="text-align:left"><h2 id="ivFt" style="margin-bottom:4px">Nuevo insumo</h2>
+  <div class="f">Nombre<input id="ivfN" autocomplete="off"></div>
+  <div class="f">Categoría<input id="ivfC" list="ivCats" autocomplete="off" placeholder="Ej. Latas"><datalist id="ivCats"></datalist></div>
+  <div class="f">Unidad<select id="ivfU"><option>pieza</option><option>lata</option><option>caja</option><option>bolsa</option><option>paquete</option><option>kg</option><option>litro</option></select></div>
+  <div class="f">Mínimo (avisa cuando haya que surtir)<input id="ivfM" type="text" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+  <button class="send" id="ivfS">Guardar</button><button class="sec" id="ivfX">Cancelar</button></div></div>
 <div id="lyBig"></div>
 <div id="undo"></div>
 <div id="toast"></div>
@@ -1165,6 +1192,165 @@ $('lyKl').onclick = async e => {
   } catch (err) { console.error(err); toast('No se pudo eliminar'); }
 };
 $('lyBig').onclick = e => { if (e.target.id === 'lyBig' || e.target.closest('[data-bigx]')) $('lyBig').style.display = 'none'; };
+
+// --- Escanear desde una imagen de la galería ---
+$('lyImg').onclick = () => $('lyFile').click();
+$('lyFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const bmp = await createImageBitmap(f); let code = null;
+    for (const max of [1000, 1800, 2600]) {
+      const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      lyCv.width = Math.round(bmp.width * k); lyCv.height = Math.round(bmp.height * k);
+      lyCx.drawImage(bmp, 0, 0, lyCv.width, lyCv.height);
+      const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height);
+      code = window.jsQR && jsQR(fr.data, fr.width, fr.height);
+      if (code || k === 1) break;
+    }
+    bmp.close && bmp.close();
+    if (!code) toast('No se encontró un QR en la imagen');
+    else if (!code.data.startsWith('BS:')) toast('Ese QR no es una tarjeta de lealtad');
+    else { lyCid = null; lyOpen(code.data.slice(3)); }
+  } catch (err) { console.error(err); toast('No se pudo leer la imagen'); }
+  if (lyOn && lyStream && lyStream.getVideoTracks().some(t => t.readyState === 'ended')) { lyStop(); lyStart(); } // reactiva la cámara si el sistema la cortó
+};
+
+// ---------- Inventario: conteo del día, insumos (CRUD) y por surtir ----------
+const ivCol = collection(db, 'insumos');
+const ivHoy = () => new Date().toLocaleDateString('en-CA');
+const ivNum = v => { const n = parseFloat(String(v).replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : null; };
+const ivFmt = n => n == null ? '–' : String(Math.round(n * 100) / 100);
+const IV_SEED = [['Lata de piña', 'Latas', 'lata'], ['Lata de durazno', 'Latas', 'lata'], ['Caja de fresa', 'Fruta', 'caja'],
+  ['Maruchan', 'Abarrotes', 'pieza'], ['Nutrileche entera', 'Lácteos', 'pieza'], ['Nutrileche deslactosada', 'Lácteos', 'pieza']];
+let ivList = [], ivLoaded = false, ivCat = 'Todas', ivUnsub = null, ivEditId = null;
+const ivCatOf = i => i.categoria || 'Sin categoría';
+const ivLow = i => i.stock != null && i.minimo > 0 && i.stock <= i.minimo;
+
+function ivTab(t) {
+  document.querySelectorAll('#ivt button').forEach(b => b.classList.toggle('on', b.dataset.it === t));
+  $('ivConteo').style.display = t === 'conteo' ? '' : 'none';
+  $('ivIns').style.display = t === 'ins' ? '' : 'none';
+  $('ivSur').style.display = t === 'sur' ? '' : 'none';
+}
+function ivStart() {
+  if (ivUnsub) return;
+  ivUnsub = onSnapshot(ivCol, s => {
+    ivList = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => norm(ivCatOf(a)).localeCompare(norm(ivCatOf(b))) || norm(a.nombre).localeCompare(norm(b.nombre)));
+    ivLoaded = true; ivRender();
+  }, () => toast('No se pudo cargar el inventario'));
+}
+const ivEmpty = () => '<div class="empty">Aún no hay insumos<br><button class="send" data-seed style="margin-top:12px">Cargar insumos iniciales</button></div>';
+function ivProg() {
+  const hoy = ivHoy(), n = ivList.filter(i => i.contado === hoy).length;
+  $('ivProg').innerHTML = ivList.length ? `Contados hoy: <b>${n} de ${ivList.length}</b>` : '';
+}
+function ivRender() {
+  const a = document.activeElement;
+  if (a && a.classList && a.classList.contains('ivn')) { ivProg(); return; } // no interrumpe a quien está escribiendo
+  ivConteo(); ivIns(); ivSur();
+}
+function ivConteo() {
+  if (!ivLoaded) return;
+  const hoy = ivHoy(), cats = ['Todas', ...new Set(ivList.map(ivCatOf))];
+  if (!cats.includes(ivCat)) ivCat = 'Todas';
+  ivProg();
+  $('ivCc').innerHTML = cats.map(c => `<button class="chip${c === ivCat ? ' on' : ''}" data-ic="${esc(c)}">${esc(c)}</button>`).join('');
+  const q = norm($('ivQ').value);
+  const l = ivList.filter(i => (ivCat === 'Todas' || ivCatOf(i) === ivCat) && (!q || norm(i.nombre).includes(q)));
+  $('ivCl').innerHTML = !ivList.length ? ivEmpty() : l.length ? l.map(i => {
+    const ok = i.contado === hoy;
+    return `<div class="tr${ok ? ' ivok' : ''}"><span>${ok ? '✓ ' : ''}${esc(i.nombre)}<br><small>${ivLow(i) ? '<b style="color:#c92a2a">Bajo mínimo</b> · ' : ''}anterior: ${ivFmt(i.previo ?? (ok ? null : i.stock))} · mín ${ivFmt(i.minimo)} · ${esc(i.unidad || '')}</small></span>
+      <input class="ivn" type="text" inputmode="decimal" data-iid="${i.id}" value="${ok ? ivFmt(i.stock) : ''}" placeholder="${i.stock != null ? ivFmt(i.stock) : '0'}" aria-label="Cantidad de ${esc(i.nombre)}"></div>`;
+  }).join('') : '<div class="empty">Sin resultados</div>';
+}
+function ivIns() {
+  if (!ivLoaded) return;
+  $('ivIl').innerHTML = ivList.length ? ivList.map(i => `<div class="tr"><span>${esc(i.nombre)}<br><small>${esc(ivCatOf(i))} · ${esc(i.unidad || '')} · mín ${ivFmt(i.minimo)}</small></span>
+    <button data-ie="${i.id}" aria-label="Editar ${esc(i.nombre)}">✏️</button><button data-ikd="${i.id}" aria-label="Eliminar ${esc(i.nombre)}">🗑️</button></div>`).join('') : ivEmpty();
+}
+function ivSur() {
+  if (!ivLoaded) return;
+  const l = ivList.filter(ivLow);
+  $('ivSl').innerHTML = l.length ? l.map(i => `<div class="tr"><span>${esc(i.nombre)}<br><small>hay <b>${ivFmt(i.stock)}</b> · mínimo ${ivFmt(i.minimo)} ${esc(i.unidad || '')}</small></span></div>`).join('')
+    + '<button class="send" id="ivWa" style="margin-top:6px">Enviar lista por WhatsApp</button>'
+    : '<div class="empty">Nada por surtir 🎉<br><small>Aparecen aquí los insumos con conteo igual o menor a su mínimo.</small></div>';
+}
+
+$('ivbtn').onclick = () => { $('iv').style.display = 'flex'; ivStart(); ivTab('conteo'); };
+$('ivx').onclick = () => { ivUnsub && ivUnsub(); ivUnsub = null; ivLoaded = false; $('ivForm').style.display = 'none'; $('iv').style.display = 'none'; };
+$('ivt').onclick = e => { const b = e.target.closest('[data-it]'); if (b) ivTab(b.dataset.it); };
+$('ivCc').onclick = e => { const b = e.target.closest('[data-ic]'); if (b) { ivCat = b.dataset.ic; ivConteo(); } };
+$('ivQ').oninput = ivConteo;
+
+// guardar conteo (se guarda solo al terminar de escribir en cada insumo)
+$('ivCl').addEventListener('change', async e => {
+  const inp = e.target.closest('.ivn'); if (!inp || !inp.value.trim()) return;
+  const i = ivList.find(x => x.id === inp.dataset.iid); if (!i) return;
+  const n = ivNum(inp.value);
+  if (n == null) { toast('Escribe un número válido'); inp.value = ''; return; }
+  const hoy = ivHoy(), up = { stock: n, contado: hoy };
+  if (i.contado !== hoy) up.previo = i.stock ?? null;
+  Object.assign(i, up);
+  const row = inp.closest('.tr'); row.classList.add('ivok'); ivProg();
+  try {
+    await updateDoc(doc(db, 'insumos', i.id), up);
+    setDoc(doc(db, 'conteos', hoy), { fecha: hoy, items: { [i.id]: n } }, { merge: true }).catch(() => {}); // historial por día
+  } catch (err) { console.error(err); row.classList.remove('ivok'); toast('No se pudo guardar el conteo'); }
+});
+
+// alta / edición
+function ivForm(i) {
+  ivEditId = i ? i.id : null;
+  $('ivFt').textContent = i ? 'Editar insumo' : 'Nuevo insumo';
+  $('ivfN').value = i ? i.nombre : ''; $('ivfC').value = i ? (i.categoria || '') : '';
+  $('ivfU').value = i && i.unidad ? i.unidad : 'pieza'; $('ivfM').value = i && i.minimo ? i.minimo : '';
+  $('ivCats').innerHTML = [...new Set(ivList.map(ivCatOf))].map(c => `<option value="${esc(c)}">`).join('');
+  $('ivForm').style.display = 'flex';
+}
+$('ivNew').onclick = () => ivForm(null);
+$('ivfX').onclick = () => { $('ivForm').style.display = 'none'; };
+$('ivfS').onclick = async () => {
+  const nombre = $('ivfN').value.trim(), minimo = $('ivfM').value.trim() ? ivNum($('ivfM').value) : 0;
+  if (!nombre) { toast('Escribe el nombre'); return; }
+  if (minimo == null) { toast('El mínimo debe ser un número'); return; }
+  const base = { nombre, categoria: $('ivfC').value.trim() || 'General', unidad: $('ivfU').value, minimo };
+  $('ivForm').style.display = 'none';
+  try {
+    if (ivEditId) await updateDoc(doc(db, 'insumos', ivEditId), base);
+    else await addDoc(ivCol, { ...base, stock: null, contado: null, previo: null, creado: serverTimestamp() });
+    toast('Insumo guardado ✓');
+  } catch (err) { console.error(err); toast('No se pudo guardar'); }
+};
+$('ivIl').onclick = async e => {
+  const ed = e.target.closest('[data-ie]'), de = e.target.closest('[data-ikd]');
+  if (ed) { const i = ivList.find(x => x.id === ed.dataset.ie); i && ivForm(i); return; }
+  if (!de) return;
+  const i = ivList.find(x => x.id === de.dataset.ikd); if (!i) return;
+  if (!await ask('Eliminar insumo', `¿Eliminar «${i.nombre}» del inventario?`, 'Eliminar', 'Cancelar', true)) return;
+  const { id, ...data } = i;
+  try {
+    await deleteDoc(doc(db, 'insumos', id));
+    undo('Insumo eliminado', () => setDoc(doc(db, 'insumos', id), data).catch(() => toast('No se pudo restaurar')));
+  } catch (err) { console.error(err); toast('No se pudo eliminar'); }
+};
+
+// cargar insumos iniciales (botón del estado vacío)
+$('iv').addEventListener('click', async e => {
+  if (!e.target.closest('[data-seed]')) return;
+  try {
+    const b = writeBatch(db);
+    IV_SEED.forEach(([nombre, categoria, unidad]) => b.set(doc(ivCol), { nombre, categoria, unidad, minimo: 0, stock: null, contado: null, previo: null, creado: serverTimestamp() }));
+    await b.commit(); toast('Insumos cargados ✓');
+  } catch (err) { console.error(err); toast('No se pudieron cargar'); }
+});
+
+// por surtir → WhatsApp
+$('ivSl').onclick = e => {
+  if (!e.target.closest('#ivWa')) return;
+  const l = ivList.filter(ivLow);
+  const txt = `Por surtir (${new Date().toLocaleDateString('es-MX')}):\n` + l.map(i => `• ${i.nombre}: hay ${ivFmt(i.stock)} (mín ${ivFmt(i.minimo)} ${i.unidad || ''})`).join('\n');
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+};
 </script>
 <script>
 // App instalable: registra el service worker y muestra el botón "Instalar" cuando el navegador lo permite
