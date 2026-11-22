@@ -245,7 +245,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <body>
 <header>
   <div class="tabs"><button class="tab on" data-v="menu">Menú</button><button class="tab" data-v="ords">Pedidos <b id="oc"></b></button><button class="tab" data-v="his">Historial</button><button class="tab" data-v="aj">Ajustes</button><button class="qrb" id="qrbtn" aria-label="Lealtad (QR)" title="Lealtad"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v3M14 20h3M20 20h1"/></svg></button><button class="qrb" id="ivbtn" aria-label="Inventario" title="Inventario"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></button></div>
-  <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar producto…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button><button id="ibtn" aria-label="Instalar app">📲 Instalar</button></div>
+  <div id="mh"><div class="top"><input id="q" type="search" placeholder="🔍 Buscar en todo el menú…" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="x" id="clr" aria-label="Borrar">✕</button><button id="ibtn" aria-label="Instalar app">📲 Instalar</button></div>
   <div class="chips" id="chips"></div></div>
 </header>
 <main id="ords" style="display:none"></main>
@@ -314,7 +314,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <div id="undo"></div>
 <div id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -423,7 +423,7 @@ function toast(t) { const el = $('toast'); el.textContent = t; el.style.display 
 
 onSnapshot(collection(db, 'productos'), snap => {
   all = snap.docs.map(d => ({ id: d.id, ...d.data() })); products = all.filter(p => p.activo !== false);
-  products.forEach(p => { p._n = norm(p.nombre).split(/\s+/); p._d = norm(p.descripcion).split(/[\s,.;]+/); p._f = norm(p.nombre); });
+  products.forEach(p => { p._n = norm(p.nombre).split(/\s+/); p._d = norm(p.descripcion).split(/[\s,.;]+/); p._f = norm(p.nombre); idxProd(p); });
   renderChips(); if (view === 'menu') render(); decAdm(); lyRegalos();
 }, () => { $('list').innerHTML = '<div class="empty">No se pudo cargar el menú. Revisa tu conexión.</div>'; });
 
@@ -823,25 +823,77 @@ $('fiBg').onclick = async e => {
 };
 function renderChips() {
   const used = ['todos', ...Object.keys(CATS).filter(k => products.some(p => p.categoria === k))];
-  $('chips').innerHTML = used.map(k => `<button class="chip${k === cat ? ' on' : ''}" data-c="${k}">${k === 'todos' ? 'Todo' : CATS[k]}</button>`).join('');
+  const srch = !!$('q').value.trim(); $('chips').innerHTML = used.map(k => `<button class="chip${!srch && k === cat ? ' on' : ''}" data-c="${k}">${k === 'todos' ? 'Todo' : CATS[k]}</button>`).join('');
 }
 
-function search() {
-  const toks = norm($('q').value).split(/\s+/).filter(Boolean);
-  let res = products.filter(p => cat === 'todos' || p.categoria === cat);
-  if (!toks.length) return res.sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
-  const out = [];
-  for (const p of res) {
-    let score = 0, ok = true;
-    for (const t of toks) {
-      if (p._n.some(w => w.startsWith(t))) score += 3;
-      else if (p._f.includes(t)) score += 2;
-      else if (p._d.some(w => w.startsWith(t))) score += 1;
-      else { ok = false; break; }
-    }
-    if (ok) out.push([score + (p._f.startsWith(toks[0]) ? 2 : 0), p]);
+// ---------- Buscador global: sin acentos ni mayúsculas, fonético, tolera errores y sinónimos ----------
+// Escribe como suena: "crepaguete" encuentra "Crepa Baguette", "wafle" encuentra "Waffle", etc.
+const phon = s => norm(s).replace(/[^a-z0-9\s]/g, ' ')
+  .replace(/qu(?=[ei])/g, 'k').replace(/gu(?=[ei])/g, '\u0001').replace(/g(?=[ei])/g, 'j').replace(/\u0001/g, 'g')
+  .replace(/ch/g, '\u0002').replace(/c(?=[ei])/g, 's').replace(/c/g, 'k').replace(/\u0002/g, 'ch')
+  .replace(/ll/g, 'y').replace(/z/g, 's').replace(/v/g, 'b').replace(/w/g, 'u').replace(/q/g, 'k')
+  .replace(/h/g, '').replace(/(.)\1+/g, '$1').replace(/\s+/g, ' ').trim();
+// Sinónimos: lo que escribe la gente -> palabras equivalentes del menú (puedes agregar más)
+const ALIAS_RAW = {
+  cafe: ['capuchino', 'moka', 'mocaccino', 'latte', 'americano', 'espresso', 'expreso'],
+  capuchino: ['cafe'], moka: ['cafe'], latte: ['cafe'], americano: ['cafe'], espresso: ['cafe'], expreso: ['cafe'],
+  licuado: ['smoothie', 'malteada'], malteada: ['smoothie', 'frappe'], smoothie: ['licuado'],
+  hotcake: ['pancake'], hotcakes: ['pancake'], panqueque: ['pancake'], panqueques: ['pancake'],
+  crepe: ['crepa'], crep: ['crepa'], fresa: ['fresas'], refresco: ['bebida'], bebida: ['refresco']
+};
+const ALIAS = {}; for (const k in ALIAS_RAW) ALIAS[phon(k)] = ALIAS_RAW[k].map(phon);
+const lev = (p, t) => { // distancia mínima de p dentro de cualquier parte de t
+  const m = p.length, n = t.length; let prev = Array.from({ length: m + 1 }, (_, i) => i), cur = new Array(m + 1), best = prev[m];
+  for (let j = 1; j <= n; j++) {
+    cur[0] = 0;
+    for (let i = 1; i <= m; i++) cur[i] = Math.min(prev[i - 1] + (p[i - 1] === t[j - 1] ? 0 : 1), prev[i] + 1, cur[i - 1] + 1);
+    if (cur[m] < best) best = cur[m]; [prev, cur] = [cur, prev];
   }
-  return out.sort((a, b) => b[0] - a[0]).map(x => x[1]);
+  return best;
+};
+function idxProd(p) {
+  p._w = phon(p.nombre).split(' ').filter(Boolean); p._j = p._w.join('');
+  p._c = phon(CATS[p.categoria] || p.categoria || '').split(' ').filter(Boolean);
+  p._e = phon(p.descripcion || '').split(' ').filter(Boolean);
+}
+const tol = t => t.length <= 3 ? 0 : t.length <= 5 ? 1 : 2;
+function sc(p, t, fz) { // puntaje de un término para un producto (0 = no coincide)
+  let best = 0;
+  for (const a of [t, ...(ALIAS[t] || [])]) {
+    if (p._w.some(w => w.startsWith(a))) best = Math.max(best, 6);
+    else if (a.length >= 3 && p._j.includes(a)) best = Math.max(best, 5);
+    else if (p._c.some(w => w.startsWith(a))) best = Math.max(best, 3);
+    else if (p._e.some(w => w.startsWith(a))) best = Math.max(best, 2);
+    else if (a.length >= 4 && p._e.some(w => w.includes(a))) best = Math.max(best, 1.5);
+  }
+  if (!best && fz && t.length >= 4) { // errores de escritura (solo si no hubo coincidencias exactas)
+    const d = Math.min(lev(t, p._j), ...p._w.map(w => lev(t, w)));
+    if (d <= tol(t) && (t.length > 6 || p._j.includes(t[0]))) best = 4 - d * 0.5;
+    else if (t.length >= 5 && p._e.some(w => w.length >= 5 && lev(t, w) <= 1)) best = 1;
+  }
+  return best;
+}
+function search() {
+  const toks = phon($('q').value).split(' ').filter(Boolean);
+  search.approx = false;
+  // Sin texto: se aplica el filtro de categoría. Con texto: la búsqueda es global (ignora el filtro).
+  if (!toks.length) return products.filter(p => cat === 'todos' || p.categoria === cat).sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999));
+  const jq = toks.join('');
+  for (const fz of [false, true]) { // 1.º coincidencias exactas; si no hay, 2.º tolerando errores de escritura
+    const out = [], part = [];
+    for (const p of products) {
+      let s = 0, ok = true, hit = 0;
+      for (const t of toks) { const x = sc(p, t, fz); if (x) { s += x; hit++; } else ok = false; }
+      if (!ok && fz && toks.length > 1 && jq.length >= 5) { // palabras pegadas o separadas de más
+        const d = lev(jq, p._j); if (d <= tol(jq)) { ok = true; s = 4 - d * 0.5; }
+      }
+      if (ok) out.push([s + (p._j.startsWith(toks[0]) ? 2 : 0), p]);
+      else if (hit) part.push([s, p]);
+    }
+    if (out.length) return out.sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    if (fz && part.length) { search.approx = true; return part.sort((a, b) => b[0] - a[0]).map(x => x[1]); }
+  }
+  return [];
 }
 
 // Tamaños para productos cuyo nombre empieza con "Fresas" (incluye las de Oreo, etc.)
@@ -897,7 +949,8 @@ async function addProd(p) {
 function render() {
   const r = search();
   const arm = !$('q').value.trim() ? '<button class="armb" id="armb">🍓 Armar producto</button>' : '';
-  $('list').innerHTML = arm + (r.length ? r.map(p => `
+  const apx = search.approx ? '<div class="empty" style="padding:6px 0">Resultados parecidos</div>' : '';
+  $('list').innerHTML = arm + apx + (r.length ? r.map(p => `
     <div class="row" data-p="${p.id}"><img src="${esc(img(p.imagen))}" alt="" loading="lazy">
       <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${priceTxt(p)}</div></div>
       <button class="add" data-a="${p.id}" aria-label="Agregar ${esc(p.nombre)}">+${inCart(p) ? `<b>${inCart(p)}</b>` : ''}</button></div>`).join('')
@@ -952,9 +1005,10 @@ function sheet() {
   bar();
 }
 
-$('q').addEventListener('input', render);
-$('clr').onclick = () => { $('q').value = ''; render(); $('q').focus(); };
-$('chips').onclick = e => { const c = e.target.dataset.c; if (c) { cat = c; renderChips(); render(); } };
+let lastS = false;
+$('q').addEventListener('input', () => { const sx = !!$('q').value.trim(); if (sx !== lastS) { lastS = sx; renderChips(); } render(); });
+$('clr').onclick = () => { $('q').value = ''; lastS = false; renderChips(); render(); $('q').focus(); };
+$('chips').onclick = e => { const c = e.target.dataset.c; if (c) { cat = c; $('q').value = ''; lastS = false; qx(); renderChips(); render(); } };
 $('list').onclick = async e => {
   if (e.target.closest('#armb')) { openArm(); return; }
   const row = e.target.closest('.row');
@@ -1046,7 +1100,7 @@ $('lyx').onclick = () => {
 // --- Crear QR ---
 function lyQrHtml(id, tel) {
   const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make();
-  lyUrl = q.createDataURL(10, 3);
+  lyUrl = q.createDataURL(10, 40);
   return `<div class="lyc"><img src="${lyUrl}" alt="QR de la tarjeta"><div class="lymsg">${tel ? esc(tel) : 'Sin teléfono'}</div>
     <div class="lyr"><button class="lyb2" data-share>Compartir</button><a class="lyb2" href="${lyUrl}" download="tarjeta-berry-sweet.png">Descargar</a></div></div>`;
 }
@@ -1076,6 +1130,7 @@ $('lyGo').onclick = async () => {
 
 // --- Escanear ---
 async function lyStart() {
+  lyLoadJsqr().then(ok => { if (!ok && !lyBD) $('lyMsg').textContent = 'No se pudo cargar el lector de QR. Revisa tu conexión.'; });
   $('lyMsg').textContent = 'Apunta la cámara al QR del cliente.';
   try {
     lyStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
@@ -1086,11 +1141,16 @@ function lyStop() { lyOn = false; if (lyStream) { lyStream.getTracks().forEach(t
 function lyTick() {
   if (!lyOn) return;
   const v = $('lyVid');
-  if (v.readyState === v.HAVE_ENOUGH_DATA) {
-    lyCv.width = v.videoWidth; lyCv.height = v.videoHeight; lyCx.drawImage(v, 0, 0);
-    const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height);
-    const code = window.jsQR && jsQR(fr.data, fr.width, fr.height);
-    if (code && code.data.startsWith('BS:')) lyOpen(code.data.slice(3));
+  if (v.readyState === v.HAVE_ENOUGH_DATA && !lyBusy) {
+    if (lyBD) {
+      lyBusy = true;
+      lyBD.detect(v).then(r => { const t = r[0] && r[0].rawValue; if (t && t.startsWith('BS:')) lyOpen(t.slice(3)); }).catch(() => {}).finally(() => { lyBusy = false; });
+    } else if (window.jsQR) {
+      lyCv.width = v.videoWidth; lyCv.height = v.videoHeight; lyCx.drawImage(v, 0, 0);
+      const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height);
+      const code = jsQR(fr.data, fr.width, fr.height);
+      if (code && code.data.startsWith('BS:')) lyOpen(code.data.slice(3));
+    }
   }
   requestAnimationFrame(lyTick);
 }
@@ -1152,7 +1212,7 @@ $('lyRl').onclick = async e => {
 
 // --- Tarjetas generadas (ver todas, con/sin teléfono, eliminar) ---
 let lyKUnsub = null, lyKList = [], lyKF = 'todas'; const lyTh = {};
-const lyThumb = id => lyTh[id] || (lyTh[id] = (() => { const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make(); return q.createDataURL(3, 2); })());
+const lyThumb = id => lyTh[id] || (lyTh[id] = (() => { const q = qrcode(0, 'M'); q.addData('BS:' + id); q.make(); return q.createDataURL(4, 16); })());
 function lyKStart() {
   if (lyKUnsub) return;
   lyKUnsub = onSnapshot(lyCol, s => {
@@ -1193,25 +1253,60 @@ $('lyKl').onclick = async e => {
 };
 $('lyBig').onclick = e => { if (e.target.id === 'lyBig' || e.target.closest('[data-bigx]')) $('lyBig').style.display = 'none'; };
 
+// --- Lector de QR: detector nativo (si el navegador lo trae) + jsQR de respaldo ---
+let lyBD = null, lyBusy = false;
+try { if ('BarcodeDetector' in window) lyBD = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {}
+function lyLoadJsqr() {
+  if (window.jsQR) return Promise.resolve(true);
+  return lyLoadJsqr.p || (lyLoadJsqr.p = (async () => {
+    for (const u of ['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js', 'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js']) {
+      await new Promise(r => { const sc = document.createElement('script'); sc.src = u; sc.onload = r; sc.onerror = r; document.head.appendChild(sc); });
+      if (window.jsQR) return true;
+    }
+    lyLoadJsqr.p = null; return false;
+  })());
+}
+async function lyDecode(bmp) {
+  if (lyBD) { try { const r = await lyBD.detect(bmp); if (r.length) return r[0].rawValue; } catch (e) {} }
+  if (!(await lyLoadJsqr())) throw new Error('nolib');
+  const W = bmp.width, H = bmp.height, M = Math.max(W, H), pad = 24;
+  const tryAt = (sx, sy, sw, sh, k) => {
+    const w = Math.max(1, Math.round(sw * k)), h = Math.max(1, Math.round(sh * k));
+    lyCv.width = w + pad * 2; lyCv.height = h + pad * 2;
+    lyCx.fillStyle = '#fff'; lyCx.fillRect(0, 0, lyCv.width, lyCv.height); // margen blanco alrededor
+    lyCx.imageSmoothingEnabled = true; lyCx.imageSmoothingQuality = 'high';
+    lyCx.drawImage(bmp, sx, sy, sw, sh, pad, pad, w, h);
+    const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height), c = jsQR(fr.data, fr.width, fr.height);
+    return c ? c.data : null;
+  };
+  const cap = Math.min(1, 2400 / M);
+  for (const k of (M < 700 ? [2, 1, 0.5] : [cap, cap * 0.6, cap * 0.35])) { const d = tryAt(0, 0, W, H, k); if (d) return d; }
+  // mosaico de ventanas que se traslapan, por si el QR es pequeño dentro de una captura grande
+  const ws = Math.max(Math.min(W, H) * 0.7, Math.min(400, M)), st = ws / 2;
+  for (let y = 0; y < H; y += st) for (let x = 0; x < W; x += st) {
+    const sw = Math.min(ws, W - x), sh = Math.min(ws, H - y);
+    if (sw < 120 || sh < 120) continue;
+    const d = tryAt(x, y, sw, sh, 1); if (d) return d;
+  }
+  return null;
+}
+
 // --- Escanear desde una imagen de la galería ---
 $('lyImg').onclick = () => $('lyFile').click();
 $('lyFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  $('lyMsg').textContent = 'Leyendo imagen…';
   try {
-    const bmp = await createImageBitmap(f); let code = null;
-    for (const max of [1000, 1800, 2600]) {
-      const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
-      lyCv.width = Math.round(bmp.width * k); lyCv.height = Math.round(bmp.height * k);
-      lyCx.drawImage(bmp, 0, 0, lyCv.width, lyCv.height);
-      const fr = lyCx.getImageData(0, 0, lyCv.width, lyCv.height);
-      code = window.jsQR && jsQR(fr.data, fr.width, fr.height);
-      if (code || k === 1) break;
-    }
-    bmp.close && bmp.close();
-    if (!code) toast('No se encontró un QR en la imagen');
-    else if (!code.data.startsWith('BS:')) toast('Ese QR no es una tarjeta de lealtad');
-    else { lyCid = null; lyOpen(code.data.slice(3)); }
-  } catch (err) { console.error(err); toast('No se pudo leer la imagen'); }
+    const bmp = await createImageBitmap(f);
+    const txt = await lyDecode(bmp); bmp.close && bmp.close();
+    if (!txt) toast('No se encontró un QR en la imagen');
+    else if (!txt.startsWith('BS:')) toast('Ese QR no es una tarjeta de lealtad');
+    else { lyCid = null; lyOpen(txt.slice(3)); }
+  } catch (err) {
+    console.error(err);
+    toast(err.message === 'nolib' ? 'No se pudo cargar el lector de QR. Revisa tu conexión' : 'No se pudo leer la imagen');
+  }
+  $('lyMsg').textContent = 'Apunta la cámara al QR del cliente.';
   if (lyOn && lyStream && lyStream.getVideoTracks().some(t => t.readyState === 'ended')) { lyStop(); lyStart(); } // reactiva la cámara si el sistema la cortó
 };
 
