@@ -498,7 +498,16 @@ const NUEVOS = [
   { k: ['crepag', 'nutella'], nombre: 'Crepaghetti de Nutella', descripcion: 'Nutella, plátano y fresa', precio: 95, categoria: 'crepes' },
   { k: ['crepag', 'ferrero'], nombre: 'Crepaghetti de Ferrero Rocher', descripcion: 'Nutella, lechera, fresa, nuez y un chocolate Ferrero', precio: 95, categoria: 'crepes' },
   { k: ['crepag', 'frutos'], nombre: 'Crepaghetti de Frutos Rojos', descripcion: 'Mermelada de zarzamora, queso Filadelfia, fresa, zarzamora y lechera', precio: 95, categoria: 'crepes' },
-  { k: ['crepag', 'durazno'], nombre: 'Crepaghetti de Durazno', descripcion: 'Lechera, mermelada de durazno y durazno picado en almíbar', precio: 95, categoria: 'crepes' }
+  { k: ['crepag', 'durazno'], nombre: 'Crepaghetti de Durazno', descripcion: 'Lechera, mermelada de durazno y durazno picado en almíbar', precio: 95, categoria: 'crepes' },
+  // Fresas de cheesecake: 4 sabores de mermelada. El precio real sale del tamaño (TAMS_CHEESE: 12 oz $110 · 16 oz $120 · 24 oz $150)
+  { k: ['cheesecake', 'zarzamora'], nombre: 'Fresas de cheesecake de zarzamora', descripcion: 'Fresas de cheesecake con mermelada de zarzamora', precio: 110, categoria: 'fresas' },
+  { k: ['cheesecake', 'frambuesa'], nombre: 'Fresas de cheesecake de frambuesa', descripcion: 'Fresas de cheesecake con mermelada de frambuesa', precio: 110, categoria: 'fresas' },
+  { k: ['cheesecake', 'durazno'], nombre: 'Fresas de cheesecake de durazno', descripcion: 'Fresas de cheesecake con mermelada de durazno', precio: 110, categoria: 'fresas' },
+  { k: ['cheesecake', 'mermelada de fresa'], nombre: 'Fresas de cheesecake de fresa', descripcion: 'Fresas de cheesecake con mermelada de fresa', precio: 110, categoria: 'fresas' },
+  // Bebidas: todos los cafés $45; el ponche es de temporada ($35): se desactiva en Ajustes → Productos cuando acabe
+  { k: ['capuchino'], nombre: 'Café capuchino', descripcion: 'Café con leche y espumita, en capas', precio: 45, categoria: 'bebidas' },
+  { k: ['cafe', 'artesanal'], nombre: 'Café artesanal', descripcion: 'Café Punta del Cielo con un toque de vainilla', precio: 45, categoria: 'bebidas' },
+  { k: ['ponche'], nombre: 'Ponche', descripcion: 'Bebida de temporada', precio: 35, categoria: 'bebidas' }
 ];
 const WIPE = { ped: { cols: ['comandas'], t: '¿Borrar todos los pedidos?', m: 'Se eliminan los pedidos activos, el historial y los cortes de todos los días. Productos y opciones se quedan.' },
   all: { cols: ['comandas', 'productos', 'toppings'], t: '¿Borrar TODA la base de datos?', m: 'Se eliminan pedidos, cortes, productos y opciones de armado (toppings, coberturas, cremas).' } };
@@ -632,6 +641,9 @@ onSnapshot(collection(db, 'toppings'), snap => {
   if ($('arm').style.display === 'flex') renderArm();
 });
 const lim = () => A.v[V].g;
+// Lo incluido en el precio sigue siendo lim(); pero en frutas, coberturas y toppings se puede dar 1 de cortesía hasta un tope fijo de 3
+const CAP = 3, CAPG = ['fruta', 'cobertura', 'topping'];
+const mx = g => CAPG.includes(g) && lim()[g] < UNL ? Math.max(lim()[g], CAP) : lim()[g];
 const gKeys = () => GO.filter(g => lim()[g]);
 const nm = id => tops.find(t => t.id === id)?.nombre;
 function armTotal() { return A.v[V].p + Object.values(S).flat().reduce((x, id) => x + (Number(tops.find(t => t.id === id)?.extra) || 0), 0); }
@@ -646,7 +658,7 @@ function renderArm() {
   $('av').innerHTML = A.v.length > 1
     ? `<div class="szs"><span>${A.t === 'tipo' ? 'Tipo' : 'Tamaño'}: <b>${A.v[V].n}</b> · ${fmt(A.v[V].p)}</span><button data-szc="1">Cambiar</button></div>`
     : `<div class="szs"><span><b>${esc(A.n)}</b> · ${fmt(A.v[V].p)}</span></div>`;
-  $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}${lim()[g] >= UNL ? '' : '/' + lim()[g]}</button>`).join('');
+  $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}${lim()[g] >= UNL ? '' : '/' + lim()[g]}${(S[g] || []).length > lim()[g] ? ' +' + ((S[g] || []).length - lim()[g]) : ''}</button>`).join('');
   const q = norm($('aq').value).trim(), cur = S[G] || [];
   const act = tops.filter(t => inG(t, G) && t.activo !== false && (!q || t._n.includes(q)));
   $('ag').innerHTML = act.map(t => `<button class="tp${cur.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin opciones. Cárgalas en Ajustes.</div>';
@@ -672,7 +684,7 @@ $('ag').onclick = e => {
   const sz = e.target.closest('[data-sz]');
   if (sz) {
     V = +sz.dataset.sz; SZ = false; SZD = true;
-    Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, lim()[g]); });
+    Object.keys(S).forEach(g => { if (!lim()[g]) delete S[g]; else S[g] = S[g].slice(0, mx(g)); });
     if (!gKeys().includes(G)) G = gKeys()[0]; if (!gKeys().length) { $('aok').onclick(); return; } renderArm(); return;
   }
   const ap = e.target.closest('[data-ap]');
@@ -680,8 +692,8 @@ $('ag').onclick = e => {
   const b = e.target.closest('[data-t]'); if (!b) return;
   const id = b.dataset.t, cur = S[G] || (S[G] = []);
   if (cur.includes(id)) S[G] = cur.filter(x => x !== id);
-  else if (cur.length >= lim()[G]) { toast(`Máximo ${lim()[G]}`); return; }
-  else { cur.push(id); if (cur.length >= lim()[G]) { const nx = gKeys().find(g => (S[g] || []).length < lim()[g]); if (nx) { G = nx; $('aq').value = ''; } } }
+  else if (cur.length >= mx(G)) { toast(`Máximo ${mx(G)}`); return; }
+  else { cur.push(id); if (cur.length > lim()[G]) toast('Extra de cortesía (sin costo)'); if (cur.length === lim()[G]) { const nx = gKeys().find(g => (S[g] || []).length < lim()[g]); if (nx) { G = nx; $('aq').value = ''; } } }
   renderArm();
 };
 $('aok').onclick = async () => {
@@ -764,7 +776,7 @@ $('ajs').onclick = e => {
 function renderAj() {
   const l = tops.filter(t => !oFil || gOf(t) === oFil);
   $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar opciones iniciales (dulces y snacks)</button><small>Solo agrega las que falten.</small>
-    <button class="b" id="cp" style="margin-top:10px">Agregar productos nuevos (brocheta y crepaghetti)</button><small>Solo agrega los que no existan ya en el menú.</small>
+    <button class="b" id="cp" style="margin-top:10px">Agregar productos nuevos (cheesecake, cafés y ponche)</button><small>Solo agrega los que no existan ya en el menú.</small>
     <button class="b" id="cm" style="margin-top:10px">Copiar menú actual</button><small>Copia productos y opciones para pegarlos en el chat y compararlos.</small></div>
   <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff">${GOA.map(g => `<option value="${g}"${g === (oFil || 'topping') ? ' selected' : ''}>${GN[g]}</option>`).join('')}</select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
   <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GOA.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
@@ -790,7 +802,7 @@ $('aj').onclick = async e => {
     t.disabled = true; const ya = []; let n = 0;
     for (const x of NUEVOS) {
       if (all.some(p => x.k.every(w => norm(p.nombre).includes(w)))) ya.push(x.nombre);
-      else { addDoc(collection(db, 'productos'), { nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, categoria: x.categoria, imagen: '', activo: true }); n++; }
+      else { addDoc(collection(db, 'productos'), { nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, categoria: x.categoria, imagen: '', activo: x.activo !== false }); n++; }
     }
     toast(n ? `${n} productos agregados ✓${ya.length ? ' · ya existían ' + ya.length : ''}` : 'Ya estaban todos'); setTimeout(() => t.disabled = false, 1500);
   }
@@ -905,7 +917,7 @@ function search() {
 // Tamaños para productos cuyo nombre empieza con "Fresas" (incluye las de Oreo, etc.)
 // El precio depende solo del tamaño (PRECIO_FRESA); ignora el precio guardado en el producto.
 const FRESA_TAMS = Object.entries(PRECIO_FRESA).map(([n, precio]) => ({ n, precio }));
-const TAMS_CHEESE = [{ n: '12 oz', precio: 110 }, { n: '16 oz', precio: 120 }]; // fresas de cheesecake: otros precios, sin 24 oz
+const TAMS_CHEESE = [{ n: '12 oz', precio: 110 }, { n: '16 oz', precio: 120 }, { n: '24 oz', precio: 150 }]; // fresas de cheesecake: otros precios que las de crema
 const tamsFor = p => /cheesecake/.test(norm(p.nombre)) ? TAMS_CHEESE : FRESA_TAMS;
 const priceTxt = p => needsSize(p) ? `Desde ${fmt(Math.min(...tamsFor(p).map(t => t.precio)))}` : fmt(p.precio);
 const needsSize = p => /^fresas?\b/.test(norm(p.nombre)) && !/\boz\b/.test(norm(p.nombre));
