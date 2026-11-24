@@ -616,12 +616,15 @@ const SEED = {
   topsal: ['Gomitas de durazno', 'Gomitas de lombriz', 'Picafresas', 'Pulparindo', 'Cacahuate japonés', 'Cacahuate partido', 'Cacahuate enchilado', 'Gomitas de frutas', 'Panditas'],
   cobsal: ['Miguelito', 'Tajín', 'Chamoy', 'Salsa botanera', 'Salsa Valentina', 'Queso amarillo'],
   sabor: [['Jengibre y limón', 0], ['Manzanilla, hinojo y aloe vera', 0], ['Sencha y matcha', 0], ['Manzanilla y lavanda', 0, false], ['Té blanco, hierbabuena y menta', 0, false], ['Té negro y durazno', 0, false]], // el 3er dato false = agotado por ahora
-  frutaad: ['Uva', 'Durazno'],
   sodasab: ['Fresa', 'Mora azul', 'Mango', 'Manzana'],
   extrasoda: [['Perlas explosivas', 10]]
 };
 let tops = [], A = null, V = 0, G = '', S = {}, EK = null, SZ = false, SZD = false;
 const gOf = t => t.grupo || 'topping';
+// Fruta adicional (fresas): ya no es un grupo aparte. Es una marca (adicional:true) en las frutas de abajo.
+const ADIC = ['Uva', 'Durazno'];
+const GOA = GO.filter(g => g !== 'frutaad'); // grupos que se ven en Ajustes
+const inG = (t, g) => g === 'frutaad' ? (gOf(t) === 'frutaad' || (gOf(t) === 'fruta' && t.adicional === true)) : gOf(t) === g; // 'frutaad' (viejo) se sigue leyendo hasta migrar
 onSnapshot(collection(db, 'toppings'), snap => {
   tops = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => norm(a.nombre).localeCompare(norm(b.nombre)));
   tops.forEach(t => t._n = norm(t.nombre));
@@ -645,7 +648,7 @@ function renderArm() {
     : `<div class="szs"><span><b>${esc(A.n)}</b> · ${fmt(A.v[V].p)}</span></div>`;
   $('agt').innerHTML = gKeys().map(g => `<button class="chip${g === G ? ' on' : ''}" data-g="${g}">${GN[g]} ${(S[g] || []).length}${lim()[g] >= UNL ? '' : '/' + lim()[g]}</button>`).join('');
   const q = norm($('aq').value).trim(), cur = S[G] || [];
-  const act = tops.filter(t => gOf(t) === G && t.activo !== false && (!q || t._n.includes(q)));
+  const act = tops.filter(t => inG(t, G) && t.activo !== false && (!q || t._n.includes(q)));
   $('ag').innerHTML = act.map(t => `<button class="tp${cur.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin opciones. Cárgalas en Ajustes.</div>';
   $('asel').textContent = gKeys().flatMap(g => (S[g] || []).map(nm)).filter(Boolean).join(' · ');
   $('aok').textContent = `Agregar · ${fmt(armTotal())}`;
@@ -763,9 +766,9 @@ function renderAj() {
   $('ajo').innerHTML = `<div class="aj"><h3>Cargar lista inicial</h3><button class="b" id="cs">Cargar opciones iniciales (dulces y snacks)</button><small>Solo agrega las que falten.</small>
     <button class="b" id="cp" style="margin-top:10px">Agregar productos nuevos (brocheta y crepaghetti)</button><small>Solo agrega los que no existan ya en el menú.</small>
     <button class="b" id="cm" style="margin-top:10px">Copiar menú actual</button><small>Copia productos y opciones para pegarlos en el chat y compararlos.</small></div>
-  <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff">${GO.map(g => `<option value="${g}"${g === (oFil || 'topping') ? ' selected' : ''}>${GN[g]}</option>`).join('')}</select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
-  <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GO.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
-  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)] || 'Otra'}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar opciones iniciales".</div>'}</div>`;
+  <div class="aj"><h3>Agregar opciones</h3><select id="cgp" style="width:100%;font-size:15px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff">${GOA.map(g => `<option value="${g}"${g === (oFil || 'topping') ? ' selected' : ''}>${GN[g]}</option>`).join('')}</select><small>Uno por línea. Con extra: <b>Ferrero, 15</b></small><textarea id="cl" rows="4"></textarea><button class="b" id="ca">Agregar lista</button></div>
+  <div class="aj"><h3>Opciones (${l.length})</h3><div class="chips" style="margin-bottom:6px">${[['', 'Todas'], ...GOA.map(g => [g, GN[g]])].map(([k, n]) => `<button class="chip${k === oFil ? ' on' : ''}" data-of="${k}">${n}</button>`).join('')}</div>
+  ${l.map(t => `<div class="tr">${thp(t.imagen)}<span class="${t.activo === false ? 'off' : ''}">${esc(t.nombre)}<br><small>${GN[gOf(t)] || 'Otra'}${t.adicional ? ' · también adicional en fresas' : ''}${t.extra > 0 ? ' · +' + fmt(t.extra) : ''}</small></span><button data-ti="${t.id}" aria-label="Foto">📷</button><button class="sw${t.activo === false ? '' : ' on'}" data-tt="${t.id}" aria-label="Activar o desactivar"></button><button data-td="${t.id}" aria-label="Borrar">🗑</button></div>`).join('') || '<div class="empty">Sin opciones. Toca "Cargar opciones iniciales".</div>'}</div>`;
 }
 $('aj').onclick = async e => {
   const t = e.target, id = t.dataset.ti || t.dataset.tt || t.dataset.td;
@@ -776,8 +779,11 @@ $('aj').onclick = async e => {
       if (tops.some(x => gOf(x) === 'cobsal' && norm(x.nombre) === norm(o.nombre))) deleteDoc(doc(db, 'toppings', o.id));
       else updateDoc(doc(db, 'toppings', o.id), { grupo: 'cobsal' });
     }
+    // Fruta adicional ahora es una marca en Frutas: borra las copias viejas del grupo 'frutaad' y marca Uva/Durazno
+    for (const o of tops.filter(o => gOf(o) === 'frutaad')) { deleteDoc(doc(db, 'toppings', o.id)); n++; }
+    for (const o of tops.filter(o => gOf(o) === 'fruta' && !o.adicional && ADIC.some(a => norm(a) === norm(o.nombre)))) { updateDoc(doc(db, 'toppings', o.id), { adicional: true }); n++; }
     const cur = tops.map(o => gOf(o) === 'cobmar' ? { ...o, grupo: 'cobsal' } : o);
-    for (const g of Object.keys(SEED)) for (const x of SEED[g]) { const [nn, ex, ac] = Array.isArray(x) ? x : [x, 0]; if (!cur.some(o => gOf(o) === g && norm(o.nombre) === norm(nn))) { addDoc(collection(db, 'toppings'), { nombre: nn, grupo: g, extra: ex, activo: ac !== false, imagen: '' }); n++; } }
+    for (const g of Object.keys(SEED)) for (const x of SEED[g]) { const [nn, ex, ac] = Array.isArray(x) ? x : [x, 0]; if (!cur.some(o => gOf(o) === g && norm(o.nombre) === norm(nn))) { addDoc(collection(db, 'toppings'), { nombre: nn, grupo: g, extra: ex, activo: ac !== false, imagen: '', ...(g === 'fruta' && ADIC.some(a => norm(a) === norm(nn)) ? { adicional: true } : {}) }); n++; } }
     toast(n ? `${n} agregadas ✓` : 'Ya estaban todas'); setTimeout(() => t.disabled = false, 1500);
   }
   if (t.id === 'cp') {
@@ -792,7 +798,7 @@ $('aj').onclick = async e => {
     const L = ['MENÚ (categoría | nombre | precio | estado | descripción)'];
     [...all].sort((a, b) => String(a.categoria).localeCompare(String(b.categoria))).forEach(p => L.push([CATS[p.categoria] || p.categoria || '-', p.nombre, p.precio, p.activo === false ? 'inactivo' : 'activo', p.descripcion || ''].join(' | ')));
     L.push('', 'OPCIONES (grupo: nombre +extra)');
-    GO.forEach(g => { const l = tops.filter(o => gOf(o) === g); if (l.length) L.push(`${GN[g]}: ` + l.map(o => o.nombre + (o.extra > 0 ? ' +' + o.extra : '') + (o.activo === false ? ' (inactivo)' : '')).join(', ')); });
+    GOA.forEach(g => { const l = tops.filter(o => gOf(o) === g); if (l.length) L.push(`${GN[g]}: ` + l.map(o => o.nombre + (o.adicional ? ' (también adicional)' : '') + (o.extra > 0 ? ' +' + o.extra : '') + (o.activo === false ? ' (inactivo)' : '')).join(', ')); });
     const txt = L.join('\n');
     try { await navigator.clipboard.writeText(txt); toast('Menú copiado ✓ pégalo en el chat'); }
     catch (err) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = 'menu-actual.txt'; a.click(); toast('Menú descargado ✓'); }
@@ -907,7 +913,7 @@ const inCart = p => Object.values(cart).reduce((n, i) => n + ((i.pid || i.id) ==
 function sizeAsk(p) {
   return new Promise(res => {
     const bg = $('payBg'), box = $('pay');
-    const fo = tops.filter(t => gOf(t) === 'frutaad' && t.activo !== false), tams = tamsFor(p);
+    const fo = tops.filter(t => inG(t, 'frutaad') && t.activo !== false), tams = tamsFor(p);
     let fr = null;
     const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
     const draw = () => {
