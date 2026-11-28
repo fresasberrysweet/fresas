@@ -144,9 +144,8 @@ img.th,i.th{width:44px;height:44px;border-radius:8px;object-fit:cover;background
 .pm{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:15px;font-size:17px;font-weight:700;margin-bottom:8px}
 .pmx{width:100%;border:0;background:none;color:var(--mut);padding:10px;font-size:15px;font-weight:600}
 #ibtn{display:none;border:0;background:var(--pri);color:#fff;border-radius:12px;padding:0 12px;font-size:14px;font-weight:700;white-space:nowrap}
-.test{border-color:#e03131;margin-top:14px}.test h3{color:#e03131;margin:0 0 4px}.test small{display:block;color:var(--mut);margin-bottom:8px}
-.test button{display:block;width:100%;border:1px solid #e03131;background:#fff;color:#e03131;border-radius:12px;padding:13px;font-size:15px;font-weight:700;margin-top:8px}
-.test button.all{background:#e03131;color:#fff}.test button:disabled{opacity:.5}
+.dots{border:0;background:transparent;color:var(--mut);font-size:24px;font-weight:900;line-height:1;padding:2px 8px;margin-left:4px;border-radius:8px}.dots:active{background:var(--pri2)}
+.wipe{display:block;margin:34px auto 12px;border:0;background:none;color:var(--mut);font-size:12px;text-decoration:underline;opacity:.6;padding:8px}
 #pay input{width:100%;font-size:26px;font-weight:800;padding:12px 14px;border:2px solid var(--line);border-radius:14px;outline:none;text-align:center}
 #pay input:focus{border-color:var(--pri)}
 .qk{display:flex;gap:6px;margin:8px 0}
@@ -318,7 +317,7 @@ header{padding-top:calc(10px + env(safe-area-inset-top,0px))}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, getDocs, writeBatch, doc, query, where, limit, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, collection, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, getDoc, getDocs, writeBatch, doc, query, where, limit, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyCOqdSCerlqBgpMoanrGbzRbtfo1P0VGU4",
@@ -330,7 +329,7 @@ let db;
 try { db = initializeFirestore(app, { localCache: persistentLocalCache() }); }
 catch (e) { db = initializeFirestore(app, {}); }
 
-const CATS = { crepes:'Crepas', waffles:'Waffles', pancakes:'Pancakes', frappes:'Frappes', fresas:'Fresas', smoothies:'Smoothies', bebidas:'Bebidas', combos:'Combos' };
+const CATS = { crepes:'Crepas', waffles:'Waffles', pancakes:'Pancakes', frappes:'Frappes', fresas:'Fresas', smoothies:'Smoothies', bebidas:'Bebidas', postres:'Postres', combos:'Combos' };
 const $ = id => document.getElementById(id);
 const fmt = n => 'MX$' + Number(n || 0).toFixed(2);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -484,13 +483,12 @@ $('his').addEventListener('toggle', e => { if (e.target.classList?.contains('cor
 function renderHis() {
   const ok = hist.filter(o => o.estado === 'cobrado'), tot = ok.reduce((x, o) => x + (o.total || 0), 0);
   $('his').innerHTML = `<div class="aj">${dateBar()}<div class="tot" style="margin:10px 0 0"><span>Cobrado (${ok.length})</span><span>${fmt(tot)}</span></div></div>` + corteHtml() +
-    (hist.length ? hist.map(o => `<div class="oc ${o.estado}"><div class="h"><span>${esc(o.cliente)}</span><span class="tg">${o.estado === 'cancelado' ? 'Cancelado' : (o.tipo === 'llevar' ? 'Para llevar' : 'Aquí')}</span></div>
+    (hist.length ? hist.map(o => `<div class="oc ${o.estado}"><div class="h"><span>${esc(o.cliente)}</span><span><span class="tg">${o.estado === 'cancelado' ? 'Cancelado' : (o.tipo === 'llevar' ? 'Para llevar' : 'Aquí')}</span><button class="dots" data-od="${o.id}" aria-label="Más opciones">⋯</button></span></div>
       <div class="m">${hora(o)} · ${esc(o.mesero || 'sin mesero')}</div>${lines(o)}${o.metodoPago === 'efectivo' && o.recibido != null ? `<div class="m">💵 Recibió ${fmt(o.recibido)} · Cambio ${fmt(o.cambio)}</div>` : ''}
       <div class="t"><span>Total</span><span>${fmt(o.total)}</span></div><div class="bt"><button data-r="${o.id}">Reabrir</button></div></div>`).join('') : '<div class="empty">Sin pedidos terminados este día</div>') + testHtml();
 }
-const TEST_MODE = true; // ⚠ poner en false antes de usar la app con clientes reales: oculta los botones de borrado
-const testHtml = () => !TEST_MODE ? '' : `<div class="aj test"><h3>🧪 Zona de pruebas</h3><small>Borra datos de Firebase. No se puede deshacer.</small>
-  <button data-wipe="ped">Borrar pedidos y cortes</button><button class="all" data-wipe="all">Borrar TODA la base de datos</button></div>`;
+const TEST_MODE = true; // ⚠ poner en false al abrir con clientes reales: oculta el enlace de "eliminar todos los pedidos"
+const testHtml = () => !TEST_MODE ? '' : `<button class="wipe" data-wipe="ped">Eliminar todos los pedidos (fase de pruebas)</button>`;
 const NUEVOS = [
   { k: ['brocheta'], nombre: 'Brocheta de 6 minipancakes', descripcion: 'Fresa, plátano, Nutella y lechera', precio: 40, categoria: 'pancakes' },
   { k: ['crepag', 'mazapan'], nombre: 'Crepaghetti de Mazapán', descripcion: 'Cajeta, plátano picado y mazapán espolvoreado', precio: 95, categoria: 'crepes' },
@@ -499,18 +497,23 @@ const NUEVOS = [
   { k: ['crepag', 'ferrero'], nombre: 'Crepaghetti de Ferrero Rocher', descripcion: 'Nutella, lechera, fresa, nuez y un chocolate Ferrero', precio: 95, categoria: 'crepes' },
   { k: ['crepag', 'frutos'], nombre: 'Crepaghetti de Frutos Rojos', descripcion: 'Mermelada de zarzamora, queso Filadelfia, fresa, zarzamora y lechera', precio: 95, categoria: 'crepes' },
   { k: ['crepag', 'durazno'], nombre: 'Crepaghetti de Durazno', descripcion: 'Lechera, mermelada de durazno y durazno picado en almíbar', precio: 95, categoria: 'crepes' },
-  // Fresas de cheesecake: 4 sabores de mermelada. El precio real sale del tamaño (TAMS_CHEESE: 12 oz $110 · 16 oz $120 · 24 oz $150)
-  { k: ['cheesecake', 'zarzamora'], nombre: 'Fresas de cheesecake de zarzamora', descripcion: 'Fresas de cheesecake con mermelada de zarzamora', precio: 110, categoria: 'fresas' },
-  { k: ['cheesecake', 'frambuesa'], nombre: 'Fresas de cheesecake de frambuesa', descripcion: 'Fresas de cheesecake con mermelada de frambuesa', precio: 110, categoria: 'fresas' },
-  { k: ['cheesecake', 'durazno'], nombre: 'Fresas de cheesecake de durazno', descripcion: 'Fresas de cheesecake con mermelada de durazno', precio: 110, categoria: 'fresas' },
-  { k: ['cheesecake', 'mermelada de fresa'], nombre: 'Fresas de cheesecake de fresa', descripcion: 'Fresas de cheesecake con mermelada de fresa', precio: 110, categoria: 'fresas' },
+  // Fresas de cheesecake: un solo producto; al agregarlo se elige tamaño (TAMS_CHEESE: 12 oz $110 · 16 oz $120 · 24 oz $150) y mermelada/cobertura (opcional)
+  { k: ['cheesecake'], nombre: 'Fresas de cheesecake', descripcion: 'Fresas con cheesecake. Elige mermelada de fresa, durazno, zarzamora o frambuesa, o lechera, Hershey\'s o miel', precio: 110, categoria: 'fresas' },
+  { k: ['platano', 'frito'], nombre: 'Plátanos fritos', descripcion: 'Con lechera, Nutella o mermelada a elección', precio: 70, categoria: 'postres' },
   // Bebidas: todos los cafés $45; el ponche es de temporada ($35): se desactiva en Ajustes → Productos cuando acabe
   { k: ['capuchino'], nombre: 'Café capuchino', descripcion: 'Café con leche y espumita, en capas', precio: 45, categoria: 'bebidas' },
   { k: ['cafe', 'artesanal'], nombre: 'Café artesanal', descripcion: 'Café Punta del Cielo con un toque de vainilla', precio: 45, categoria: 'bebidas' },
   { k: ['ponche'], nombre: 'Ponche', descripcion: 'Bebida de temporada', precio: 35, categoria: 'bebidas' }
 ];
-const WIPE = { ped: { cols: ['comandas'], t: '¿Borrar todos los pedidos?', m: 'Se eliminan los pedidos activos, el historial y los cortes de todos los días. Productos y opciones se quedan.' },
-  all: { cols: ['comandas', 'productos', 'toppings'], t: '¿Borrar TODA la base de datos?', m: 'Se eliminan pedidos, cortes, productos y opciones de armado (toppings, coberturas, cremas).' } };
+// Solo se pueden borrar pedidos. Productos, opciones de armado y tarjetas de lealtad nunca se tocan desde aquí.
+const WIPE = { ped: { cols: ['comandas'], t: '¿Eliminar TODOS los pedidos?', m: 'Se eliminan los pedidos activos y todo el historial de todos los días (también el corte). Productos, opciones y tarjetas de lealtad se quedan.' } };
+async function delOrder(id) {
+  const o = hist.find(x => x.id === id); if (!o) return;
+  const c = await choiceAsk(`${o.cliente} · ${fmt(o.total)}`, 'Opciones del pedido', [{ l: '🗑️ Eliminar pedido', v: 'del' }]);
+  if (c !== 'del') return;
+  if (!(await ask('¿Eliminar este pedido?', 'Se quita del historial y del corte de ese día. No se puede deshacer.', 'Eliminar', 'Cancelar', true))) return;
+  try { await deleteDoc(doc(db, 'comandas', id)); toast('Pedido eliminado'); } catch (err) { console.error(err); toast('No se pudo eliminar'); }
+}
 async function wipeDb(k) {
   const w = WIPE[k]; if (!w || !TEST_MODE) return;
   if (!(await ask(w.t, w.m + ' No se puede deshacer.', 'Continuar', 'Volver', true))) return;
@@ -550,6 +553,7 @@ $('calBg').onclick = e => {
   else if (t.dataset.cx || t.id === 'calBg') $('calBg').style.display = 'none';
 };
 $('his').onclick = e => {
+  if (e.target.dataset.od) { delOrder(e.target.dataset.od); return; }
   if (e.target.dataset.wipe) { wipeDb(e.target.dataset.wipe); return; }
   if (e.target.dataset.d) { setDay(e.target.dataset.d); return; }
   if (e.target.dataset.cal) { openCal(); return; }
@@ -618,7 +622,7 @@ const OPTG = new Set(['frutaad', 'extrasoda']); // grupos que siempre son opcion
 const limTxt = (g, n) => OPTG.has(g) ? `${GN[g].toLowerCase()} opcional` : n >= UNL ? `${GN[g]} a elección` : g === 'bolsa' ? `${n} ${n > 1 ? 'bolsitas' : 'bolsita'}` : `${n} ${GN[g].toLowerCase()}`;
 const SEED = {
   topping: ['Almendra', 'Arándano', 'Chocoretas', 'Suspiritos', 'Cranky', "M&M's", 'Lunetas de yogur', 'Chispitas de chocolate', 'Nuez', 'Granillo', 'Ajonjolí'],
-  cobertura: ['Mermelada de fresa', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
+  cobertura: ['Mermelada de fresa', 'Mermelada de durazno', 'Mermelada de frambuesa', 'Mermelada de zarzamora', 'Miel maple', 'Miel de abeja', 'Lechera', "Hershey's"],
   fruta: ['Durazno', 'Uva', 'Fresa', 'Plátano'],
   crema: ['Clásica', 'Moka', 'Vainilla'],
   bolsa: ['Doritos', 'Ruffles', 'Sabritas', 'Churrumais', 'Rancheritos', 'Cheetos naranja', "Cheetos Flamin' Hot", "Cheetos morados (Flamin' Hot)"],
@@ -649,8 +653,9 @@ const nm = id => tops.find(t => t.id === id)?.nombre;
 function armTotal() { return A.v[V].p + Object.values(S).flat().reduce((x, id) => x + (Number(tops.find(t => t.id === id)?.extra) || 0), 0); }
 function renderArm() {
   $('arm').querySelector('h2 span').textContent = A ? A.n : 'Armar producto';
-  ['av', 'agt', 'aq', 'aft'].forEach(i => $(i).style.display = A && !SZ ? '' : 'none');
-  if (!A) { $('ag').innerHTML = ARM.map(a => { const ok = a.v.some(v => v.p != null); return `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}"${ok ? '' : ' disabled'}>${a.n}<br><small>${ok ? a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ') : 'Precio por definir'}</small></button>`; }).join(''); return; }
+  ['av', 'agt', 'aft'].forEach(i => $(i).style.display = A && !SZ ? '' : 'none');
+  $('aq').style.display = !A || !SZ ? '' : 'none'; $('aq').placeholder = A ? 'Buscar…' : '🔍 Buscar producto (fresas, crepa, waffle…)';
+  if (!A) { const lst = ARM.filter(armHit($('aq').value)); $('ag').innerHTML = !lst.length ? '<div class="empty" style="grid-column:1/-1">Sin resultados</div>' : lst.map(a => { const ok = a.v.some(v => v.p != null); return `<button class="armb" style="grid-column:1/-1;margin:0" data-ap="${a.id}"${ok ? '' : ' disabled'}>${a.n}<br><small>${ok ? a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ') : 'Precio por definir'}</small></button>`; }).join(''); return; }
   if (SZ) {
     $('ag').innerHTML = `<div class="szh">Paso 1 · Elige el ${A.t || 'tamaño'}</div>` + A.v.map((v, i) => `<button class="armb size${SZD && i === V ? ' on' : ''}" data-sz="${i}"${v.p == null ? ' disabled' : ''}><b>${v.n}</b><span>${v.p == null ? 'Precio por definir' : fmt(v.p)}</span><small>${v.d ? esc(v.d) + (GO.some(g => v.g[g]) ? ' · ' : '') : ''}${GO.filter(g => v.g[g]).map(g => limTxt(g, v.g[g])).join(' · ')}</small></button>`).join('');
     return;
@@ -664,6 +669,12 @@ function renderArm() {
   $('ag').innerHTML = act.map(t => `<button class="tp${cur.includes(t.id) ? ' on' : ''}" data-t="${t.id}">${t.imagen ? `<img src="${esc(img(t.imagen))}" alt="" loading="lazy">` : `<i>${esc((t.nombre || '?')[0].toUpperCase())}</i>`}<span>${esc(t.nombre)}</span>${t.extra > 0 ? `<em>+${fmt(t.extra)}</em>` : ''}</button>`).join('') || '<div class="empty" style="grid-column:1/-1">Sin opciones. Cárgalas en Ajustes.</div>';
   $('asel').textContent = gKeys().flatMap(g => (S[g] || []).map(nm)).filter(Boolean).join(' · ');
   $('aok').textContent = `Agregar · ${fmt(armTotal())}`;
+}
+// ¿el producto armable coincide con lo escrito? ("fresas" → Fresas con crema)
+const armHit = txt => { const w = norm(txt).trim().split(/\s+/).filter(Boolean); return a => !w.length || w.every(x => norm(a.n + ' armar arma producto').includes(x)); };
+function openArmFor(id) {
+  A = ARM.find(a => a.id === id); if (!A) return; V = 0; S = {}; SZ = A.v.length > 1; SZD = !SZ; G = gKeys()[0]; $('aq').value = ''; $('arm').style.display = 'flex';
+  if (!SZ && !gKeys().length) { $('aok').onclick(); return; } renderArm();
 }
 function openArm() { A = null; SZ = false; V = 0; G = ''; S = {}; $('aq').value = ''; $('arm').style.display = 'flex'; renderArm(); }
 function editArm(key) {
@@ -688,7 +699,7 @@ $('ag').onclick = e => {
     if (!gKeys().includes(G)) G = gKeys()[0]; if (!gKeys().length) { $('aok').onclick(); return; } renderArm(); return;
   }
   const ap = e.target.closest('[data-ap]');
-  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; SZ = A.v.length > 1; SZD = !SZ; G = gKeys()[0]; if (!SZ && !gKeys().length) { $('aok').onclick(); return; } renderArm(); return; }
+  if (ap) { A = ARM.find(a => a.id === ap.dataset.ap); V = 0; S = {}; $('aq').value = ''; SZ = A.v.length > 1; SZD = !SZ; G = gKeys()[0]; if (!SZ && !gKeys().length) { $('aok').onclick(); return; } renderArm(); return; }
   const b = e.target.closest('[data-t]'); if (!b) return;
   const id = b.dataset.t, cur = S[G] || (S[G] = []);
   if (cur.includes(id)) S[G] = cur.filter(x => x !== id);
@@ -800,11 +811,15 @@ $('aj').onclick = async e => {
   }
   if (t.id === 'cp') {
     t.disabled = true; const ya = []; let n = 0;
+    // las 4 "Fresas de cheesecake de <sabor>" de antes se reemplazan por una sola con selector de mermelada
+    const viejos = all.filter(p => /^fresas de cheesecake de /.test(norm(p.nombre)));
+    viejos.forEach(p => deleteDoc(doc(db, 'productos', p.id)));
+    const vivos = all.filter(p => !viejos.includes(p));
     for (const x of NUEVOS) {
-      if (all.some(p => x.k.every(w => norm(p.nombre).includes(w)))) ya.push(x.nombre);
+      if (vivos.some(p => x.k.every(w => norm(p.nombre).includes(w)))) ya.push(x.nombre);
       else { addDoc(collection(db, 'productos'), { nombre: x.nombre, descripcion: x.descripcion, precio: x.precio, categoria: x.categoria, imagen: '', activo: x.activo !== false }); n++; }
     }
-    toast(n ? `${n} productos agregados ✓${ya.length ? ' · ya existían ' + ya.length : ''}` : 'Ya estaban todos'); setTimeout(() => t.disabled = false, 1500);
+    toast(n || viejos.length ? `${n} productos agregados ✓${viejos.length ? ' · ' + viejos.length + ' cheesecake viejas reemplazadas' : ''}${ya.length ? ' · ya existían ' + ya.length : ''}` : 'Ya estaban todos'); setTimeout(() => t.disabled = false, 1500);
   }
   if (t.id === 'cm') {
     const L = ['MENÚ (categoría | nombre | precio | estado | descripción)'];
@@ -922,25 +937,36 @@ const tamsFor = p => /cheesecake/.test(norm(p.nombre)) ? TAMS_CHEESE : FRESA_TAM
 const priceTxt = p => needsSize(p) ? `Desde ${fmt(Math.min(...tamsFor(p).map(t => t.precio)))}` : fmt(p.precio);
 const needsSize = p => /^fresas?\b/.test(norm(p.nombre)) && !/\boz\b/.test(norm(p.nombre));
 const inCart = p => Object.values(cart).reduce((n, i) => n + ((i.pid || i.id) === p.id ? i.cant : 0), 0);
+// Productos que piden elegir una cobertura/mermelada (opcional) al agregarlos
+const cobCfg = p => {
+  const n = norm(p.nombre);
+  if (/cheesecake/.test(n)) return { t: 'Mermelada o cobertura (opcional)', re: /^(mermelada|lechera|hershey|miel)/ };
+  if (/^platanos? fritos?\b/.test(n)) return { t: 'Cobertura (opcional)', re: /^(mermelada|lechera|nue?tella)/ };
+  return null;
+};
 function sizeAsk(p) {
   return new Promise(res => {
-    const bg = $('payBg'), box = $('pay');
-    const fo = tops.filter(t => inG(t, 'frutaad') && t.activo !== false), tams = tamsFor(p);
-    let fr = null;
+    const bg = $('payBg'), box = $('pay'), tams = needsSize(p) ? tamsFor(p) : null, cfg = cobCfg(p);
+    const fo = tams ? tops.filter(t => inG(t, 'frutaad') && t.activo !== false) : [];
+    const cf = cfg ? tops.filter(t => gOf(t) === 'cobertura' && t.activo !== false && cfg.re.test(t._n)) : [];
+    let fr = null, cb = null;
     const close = v => { bg.style.display = 'none'; bg.onclick = null; res(v); };
     const draw = () => {
-      const ex = Number(fo.find(t => t.id === fr)?.extra) || 0;
+      const ex = (Number(fo.find(t => t.id === fr)?.extra) || 0) + (Number(cf.find(t => t.id === cb)?.extra) || 0);
       box.innerHTML = `<h3>${esc(p.nombre)}</h3>` +
+        (cf.length ? `<p>${cfg.t}</p><div class="qk">${cf.map(t => `<button class="${cb === t.id ? 'on' : ''}" data-b="${t.id}">${esc(t.nombre)}${t.extra > 0 ? ' +' + fmt(t.extra) : ''}</button>`).join('')}</div>` : '') +
         (fo.length ? `<p>Fruta adicional (opcional)</p><div class="qk">${fo.map(t => `<button class="${fr === t.id ? 'on' : ''}" data-f="${t.id}">${esc(t.nombre)}${t.extra > 0 ? ' +' + fmt(t.extra) : ''}</button>`).join('')}</div>` : '') +
-        '<p>Elige el tamaño</p>' +
-        tams.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(t.precio + ex)}</button>`).join('') + '<button class="pmx" data-i="x">Cancelar</button>';
+        (tams ? '<p>Elige el tamaño</p>' + tams.map((t, i) => `<button class="pm" data-i="${i}">${t.n} · ${fmt(t.precio + ex)}</button>`).join('')
+              : `<button class="pm" data-i="ok">Agregar · ${fmt((Number(p.precio) || 0) + ex)}</button>`) + '<button class="pmx" data-i="x">Cancelar</button>';
     };
     draw(); bg.style.display = 'flex';
     bg.onclick = e => {
       const d = e.target.dataset;
+      if (d.b !== undefined) { cb = cb === d.b ? null : d.b; draw(); return; }
       if (d.f !== undefined) { fr = fr === d.f ? null : d.f; draw(); return; }
       if (d.i === undefined) { if (e.target.id === 'payBg') close(null); return; }
-      close(d.i === 'x' ? null : { ...tams[+d.i], fr: fo.find(t => t.id === fr) || null });
+      const fo1 = fo.find(t => t.id === fr) || null, cb1 = cf.find(t => t.id === cb) || null;
+      close(d.i === 'x' ? null : tams ? { ...tams[+d.i], fr: fo1, cb: cb1 } : { n: '', precio: Number(p.precio) || 0, fr: null, cb: cb1 });
     };
   });
 }
@@ -956,11 +982,11 @@ function choiceAsk(title, sub, opts) {
 }
 async function addProd(p) {
   let sz = null, chip = null;
-  if (needsSize(p)) { sz = await sizeAsk(p); if (!sz) return false; }
+  if (needsSize(p) || cobCfg(p)) { sz = await sizeAsk(p); if (!sz) return false; }
   if (needsChip(p)) { chip = await choiceAsk(p.nombre, '¿Con chipotle?', [{ l: 'Con chipotle', v: 'con' }, { l: 'Sin chipotle', v: 'sin' }]); if (!chip) return false; }
-  const fr = sz && sz.fr; let key = sz ? p.id + '~' + sz.n.replace(/\s/g, '') + (fr ? '~' + fr.id : '') : p.id;
+  const fr = sz && sz.fr, cb = sz && sz.cb; let key = sz ? p.id + (sz.n ? '~' + sz.n.replace(/\s/g, '') : '') + (fr ? '~' + fr.id : '') + (cb ? '~' + cb.id : '') : p.id;
   if (chip) key += '~' + chip;
-  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre} · ${sz.n}${fr ? ' + ' + fr.nombre : ''}` : p.nombre + (chip ? ` · ${chip} chipotle` : ''), precio: sz ? sz.precio + (Number(fr && fr.extra) || 0) : (Number(p.precio) || 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
+  (cart[key] ||= { id: key, pid: p.id, nombre: sz ? `${p.nombre}${sz.n ? ' · ' + sz.n : ''}${fr ? ' + ' + fr.nombre : ''}${cb ? ' + ' + cb.nombre : ''}` : p.nombre + (chip ? ` · ${chip} chipotle` : ''), precio: sz ? sz.precio + (Number(fr && fr.extra) || 0) + (Number(cb && cb.extra) || 0) : (Number(p.precio) || 0), cant: 0, nota: '', img: p.imagen || '' }).cant++;
   return true;
 }
 
@@ -968,11 +994,13 @@ function render() {
   const r = search();
   const arm = !$('q').value.trim() ? '<button class="armb" id="armb">🍓 Armar producto</button>' : '';
   const apx = search.approx ? '<div class="empty" style="padding:6px 0">Resultados parecidos</div>' : '';
-  $('list').innerHTML = arm + apx + (r.length ? r.map(p => `
+  const qa = norm($('q').value).trim(), am = qa.length >= 2 ? ARM.filter(armHit(qa)) : [];
+  const amH = am.map(a => `<button class="armb" data-ap0="${a.id}">🍓 ${esc(a.n)} · armar<br><small>${a.v.filter(v => v.p != null).map(v => v.n + ' ' + fmt(v.p)).join(' · ')}</small></button>`).join('');
+  $('list').innerHTML = arm + amH + apx + (r.length ? r.map(p => `
     <div class="row" data-p="${p.id}"><img src="${esc(img(p.imagen))}" alt="" loading="lazy">
       <div class="inf"><div class="nm">${esc(p.nombre)}</div><div class="ds">${esc(p.descripcion)}</div><div class="pr">${priceTxt(p)}</div></div>
       <button class="add" data-a="${p.id}" aria-label="Agregar ${esc(p.nombre)}">+${inCart(p) ? `<b>${inCart(p)}</b>` : ''}</button></div>`).join('')
-    : '<div class="empty">Sin resultados</div>');
+    : am.length ? '' : '<div class="empty">Sin resultados</div>');
   bar();
 }
 
@@ -1029,6 +1057,7 @@ $('clr').onclick = () => { $('q').value = ''; lastS = false; renderChips(); rend
 $('chips').onclick = e => { const c = e.target.dataset.c; if (c) { cat = c; $('q').value = ''; lastS = false; qx(); renderChips(); render(); } };
 $('list').onclick = async e => {
   if (e.target.closest('#armb')) { openArm(); return; }
+  const a0 = e.target.closest('[data-ap0]'); if (a0) { openArmFor(a0.dataset.ap0); return; }
   const row = e.target.closest('.row');
   if (row && !e.target.closest('[data-a]')) { openFi(row.dataset.p); return; }
   const b = e.target.closest('[data-a]'); if (!b) return;
@@ -1078,6 +1107,8 @@ $('send').onclick = async () => {
 };
 
 // ---------- Lealtad (icono QR): crear, escanear y regalos ----------
+// ¿ya tiene sello hoy? (1 por visita). null = escritura pendiente de confirmar, cuenta como de hoy.
+const sellHoy = d => { const t = d.ultimoSello !== undefined ? d.ultimoSello : d.ultimo; if (t === undefined) return false; if (t === null) return true; return ymd(t.toDate ? t.toDate() : new Date(t)) === ymd(new Date()); };
 let LY_META = 10; // sellos para el premio (editable en Regalos; se guarda en ajustes/lealtad)
 onSnapshot(doc(db, 'ajustes', 'lealtad'), s => {
   const m = Math.round(Number(s.data()?.meta));
@@ -1179,7 +1210,7 @@ function lyOpen(id) {
   lyUnsub = onSnapshot(doc(db, 'clientes', id), s => {
     const box = $('lyCli');
     if (!s.exists()) { box.innerHTML = '<div class="empty">Tarjeta no encontrada</div>'; lyCid = null; return; }
-    const d = s.data(), n = d.sellos || 0, rg = all.filter(p => p.regalo === true);
+    const d = s.data(), n = d.sellos || 0, rg = all.filter(p => p.regalo === true), hoyS = sellHoy(d);
     let canje = '';
     if (n >= LY_META) canje = rg.length
       ? `<div class="lymsg" style="margin-top:12px">Regalo a entregar</div><select id="lySel">${rg.map(p => `<option>${esc(p.nombre)}</option>`).join('')}</select><button class="send" data-canje>Canjear premio</button>`
@@ -1187,7 +1218,7 @@ function lyOpen(id) {
     box.innerHTML = `<div class="lyc"><b>${d.telefono ? esc(d.telefono) : 'Sin teléfono'}</b>
       <div class="lyst">${Array.from({ length: LY_META }, (_, i) => `<i class="${i < n ? 'on' : ''}">🍓</i>`).join('')}</div>
       <div class="lymsg" style="margin-top:0">${n} de ${LY_META} sellos · ${d.canjes || 0} premios canjeados</div>
-      <button class="send pk" data-sello>Sumar sello</button>${canje}</div>`;
+      <button class="send pk" data-sello${hoyS ? ' disabled' : ''}>${hoyS ? 'Ya tiene su sello de hoy ✓' : 'Sumar sello'}</button>${hoyS ? '<div class="lymsg" style="margin-top:8px">El sello es por visita: solo 1 por día.</div>' : ''}${canje}</div>`;
   }, () => toast('No se pudo leer la tarjeta'));
 }
 $('lyCli').onclick = async e => {
@@ -1196,7 +1227,9 @@ $('lyCli').onclick = async e => {
   try {
     if (b.hasAttribute('data-sello')) {
       b.disabled = true;
-      await updateDoc(ref, { sellos: increment(1), ultimo: serverTimestamp() }); toast('Sello agregado ✓');
+      const fresh = await getDoc(ref);
+      if (fresh.exists() && sellHoy(fresh.data())) { toast('Ya tiene su sello de hoy (1 por visita)'); return; }
+      await updateDoc(ref, { sellos: increment(1), ultimo: serverTimestamp(), ultimoSello: serverTimestamp() }); toast('Sello agregado ✓');
     } else if (b.hasAttribute('data-canje')) {
       const nom = $('lySel').value;
       if (!await ask('Entregar premio', `¿Entregar «${nom}» y descontar ${LY_META} sellos?`, 'Entregar')) return;
